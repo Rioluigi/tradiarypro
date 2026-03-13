@@ -1,399 +1,298 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { 
-  LineChart, 
-  ShieldCheck, 
-  Zap, 
-  ArrowRight, 
-  MessageSquare, 
-  TrendingUp, 
-  Lock, 
-  RefreshCw,
-  Search,
-  CheckCircle2,
-  Info,
-  ChevronRight,
-  Database,
-  Activity,
-  Shield,
-  EyeOff,
-  Cpu
-} from 'lucide-react';
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tradiary Pro - Automated Trading Journal</title>
+    <!-- Fonts & Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            scroll-behavior: smooth; 
+            background-color: #F8FAFC;
+        }
+        .glass-nav { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); }
+        
+        /* Animasi Chat */
+        .chat-bubble-user { background: #1A73E8; color: white; border-radius: 20px 20px 0 20px; }
+        .chat-bubble-ai { background: #f1f5f9; color: #1e293b; border-radius: 20px 20px 20px 0; border: 1px solid #e2e8f0; }
 
-// --- KOMPONEN ANIMASI VISUAL UNTUK BENTO GRID ---
+        /* Keyframes Animasi Khusus yang Dirapihkan */
+        @keyframes bar-grow {
+            0%, 100% { height: 50%; }
+            50% { height: 90%; }
+        }
+        @keyframes bar-low {
+            0%, 100% { height: 30%; }
+            50% { height: 45%; }
+        }
+        @keyframes sync-move {
+            0% { transform: translateX(-120%); }
+            100% { transform: translateX(280%); }
+        }
+        @keyframes laser-scan {
+            0% { top: 0%; opacity: 0; }
+            10%, 90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+        @keyframes bar-dance {
+            0%, 100% { transform: scaleY(1); opacity: 0.7; }
+            50% { transform: scaleY(1.3); opacity: 1; }
+        }
+        @keyframes radar-pulse {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0.5; }
+            100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
+        }
 
-const VisualContainer = ({ children }) => (
-  <div className="h-32 w-full flex items-center justify-center mb-6 overflow-hidden">
-    {children}
-  </div>
-);
+        /* Classes Animasi */
+        .anim-bar-profit { animation: bar-grow 3s ease-in-out infinite; }
+        .anim-bar-loss { animation: bar-low 3s ease-in-out infinite; delay: 0.5s; }
+        .anim-sync-packet { animation: sync-move 2s linear infinite; }
+        .anim-laser { animation: laser-scan 3s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+        .anim-viz-bar { animation: bar-dance 2s ease-in-out infinite; transform-origin: bottom; }
+        .radar-ring { animation: radar-pulse 4s cubic-bezier(0, 0.2, 0.8, 1) infinite; }
+        
+        /* Bento Card Hover */
+        .bento-card { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .bento-card:hover { transform: translateY(-10px); }
 
-const ProfitFactorVisual = () => (
-  <VisualContainer>
-    <div className="w-40 h-16 flex items-end gap-2 px-2 bg-slate-50/50 rounded-2xl border border-slate-100 p-3">
-      <motion.div 
-        animate={{ height: ["50%", "90%", "70%", "95%"] }}
-        transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-        className="flex-1 bg-[#1A73E8] rounded-lg shadow-[0_0_15px_rgba(26,115,232,0.3)]"
-      />
-      <motion.div 
-        animate={{ height: ["30%", "45%", "35%", "30%"] }}
-        transition={{ repeat: Infinity, duration: 3, ease: "easeInOut", delay: 0.5 }}
-        className="flex-1 bg-black rounded-lg opacity-40"
-      />
-      <div className="absolute -top-2 -right-2 bg-white px-2 py-1 rounded-md shadow-sm border border-slate-100 text-[10px] font-bold text-[#1A73E8]">
-        +2.45
-      </div>
-    </div>
-  </VisualContainer>
-);
+        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body class="text-slate-900 overflow-x-hidden">
 
-const WinRateVisual = () => (
-  <VisualContainer>
-    <div className="relative w-24 h-24">
-      <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r="42" stroke="#f1f5f9" strokeWidth="10" fill="transparent" />
-        <motion.circle 
-          cx="50" cy="50" r="42" stroke="#1A73E8" strokeWidth="10" fill="transparent"
-          strokeDasharray="264"
-          initial={{ strokeDashoffset: 264 }}
-          whileInView={{ strokeDashoffset: 264 * (1 - 0.68) }}
-          transition={{ duration: 2, ease: "easeOut" }}
-          strokeLinecap="round"
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-xl font-black text-slate-800">68%</span>
-        <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Win Rate</span>
-      </div>
-    </div>
-  </VisualContainer>
-);
-
-const SyncVisual = () => (
-  <VisualContainer>
-    <div className="relative flex items-center justify-center w-full">
-      <div className="flex items-center gap-6 z-10">
-        <div className="p-3 bg-white rounded-xl shadow-sm border border-slate-100">
-          <Database className="w-6 h-6 text-slate-400" />
-        </div>
-        <div className="p-3 bg-blue-600 rounded-xl shadow-lg shadow-blue-200">
-          <RefreshCw className="w-6 h-6 text-white animate-spin-slow" />
-        </div>
-      </div>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="w-32 h-0.5 bg-slate-100 relative overflow-hidden rounded-full">
-          <motion.div 
-            animate={{ x: ["-100%", "200%"] }}
-            transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-            className="absolute inset-y-0 w-8 bg-gradient-to-r from-transparent via-blue-400 to-transparent"
-          />
-        </div>
-      </div>
-    </div>
-  </VisualContainer>
-);
-
-const DataVizVisual = () => (
-  <VisualContainer>
-    <div className="flex items-end gap-2 h-16 w-48 bg-slate-50/50 rounded-2xl border border-slate-100 p-4">
-      {[0.4, 0.7, 0.5, 0.9, 0.6, 0.8, 0.5, 0.7].map((val, i) => (
-        <motion.div 
-          key={i}
-          initial={{ scaleY: 0 }}
-          animate={{ scaleY: [1, 1.4, 1] }}
-          transition={{ repeat: Infinity, duration: 2, delay: i * 0.15 }}
-          className="flex-1 bg-blue-500/60 rounded-full origin-bottom"
-          style={{ height: `${val * 100}%` }}
-        />
-      ))}
-    </div>
-  </VisualContainer>
-);
-
-const EncryptionVisual = () => (
-  <VisualContainer>
-    <div className="relative group">
-      <div className="p-6 bg-blue-50 rounded-3xl relative">
-        <Lock className="w-12 h-12 text-[#1A73E8]" />
-        <div className="absolute inset-0 bg-blue-400/20 blur-xl rounded-full scale-75 group-hover:scale-110 transition-transform" />
-      </div>
-      <motion.div 
-        animate={{ top: ["0%", "100%", "0%"] }}
-        transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-        className="absolute left-0 right-0 h-1 bg-blue-400 shadow-[0_0_15px_#1A73E8] z-20 rounded-full"
-      />
-    </div>
-  </VisualContainer>
-);
-
-const BentoCard = ({ title, text, visual: Visual, colSpan = "col-span-1", delay = 0 }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true }}
-    transition={{ delay, duration: 0.6 }}
-    whileHover={{ y: -8 }}
-    className={`${colSpan} p-10 rounded-[3rem] bg-white border border-slate-100 flex flex-col items-center text-center shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.08)] transition-all group overflow-hidden relative`}
-  >
-    <div className="z-10 w-full flex flex-col items-center">
-      {Visual && <Visual />}
-      <h3 className="text-2xl font-black text-slate-900 mb-3 tracking-tight">{title}</h3>
-      <p className="text-slate-500 text-[15px] font-medium leading-relaxed max-w-[260px] mx-auto">{text}</p>
-    </div>
-    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-blue-50/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-  </motion.div>
-);
-
-const App = () => {
-  const [activeMessageIndex, setActiveMessageIndex] = useState(0);
-  const [visibleMessages, setVisibleMessages] = useState([]);
-
-  useEffect(() => {
-    const messages = [
-      { id: 1, role: 'user', content: 'Bagaimana performa trading Gold (XAUUSD) saya di bulan Maret?' },
-      { id: 2, role: 'assistant', content: 'Berdasarkan data MT5 Anda, performa XAUUSD bulan Maret menunjukkan Win Rate sebesar 68%. Ada tren positif pada sesi London.', citations: [{ id: 'c1', label: 'Sell Gold 15/03 @ 2150.50', detail: 'Profit: +$450' }, { id: 'c2', label: 'Buy Gold 18/03 @ 2162.20', detail: 'Profit: +$120' }] },
-      { id: 3, role: 'user', content: 'Apa penyebab drawdown terbesar minggu lalu?' },
-      { id: 4, role: 'assistant', content: 'Drawdown terbesar terjadi pada 22 Maret sebesar 2.4%. Hal ini disebabkan oleh volatilitas tinggi saat rilis data NFP.', citations: [{ id: 'c3', label: 'Loss Trade #88291', detail: 'Slippage: 2.5 pips' }] }
-    ];
-
-    if (activeMessageIndex < messages.length) {
-      const timer = setTimeout(() => {
-        setVisibleMessages(prev => [...prev, messages[activeMessageIndex]]);
-        setActiveMessageIndex(prev => prev + 1);
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [activeMessageIndex]);
-
-  return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] selection:bg-blue-100 selection:text-blue-700">
-      <style>
-        {`@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-          body { font-family: 'Plus Jakarta Sans', sans-serif; }
-          .animate-spin-slow { animation: spin 6s linear infinite; }
-          @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}
-      </style>
-
-      {/* Navigasi */}
-      <nav className="fixed top-0 w-full bg-white/70 backdrop-blur-xl border-b border-slate-200/50 z-50">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-2.5">
-            <div className="bg-[#1A73E8] p-2 rounded-xl shadow-lg shadow-blue-200">
-              <TrendingUp className="text-white w-6 h-6" />
-            </div>
-            <span className="text-2xl font-extrabold tracking-tight text-[#0F172A]">Tradiary <span className="text-[#1A73E8]">Pro</span></span>
-          </motion.div>
-          <div className="hidden md:flex items-center gap-10 text-[15px] font-semibold text-slate-500">
-            {['Fitur', 'Analitik', 'Keamanan'].map((item) => (
-              <a key={item} href={`#${item.toLowerCase()}`} className="hover:text-[#1A73E8] transition-colors">{item}</a>
-            ))}
-            <motion.button whileHover={{ scale: 1.05 }} className="bg-[#1A73E8] text-white px-6 py-2.5 rounded-xl font-bold">Hubungkan MT5</motion.button>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 lg:pt-52 lg:pb-32 px-6 overflow-hidden">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="space-y-10">
-            <h1 className="text-6xl lg:text-7xl font-[800] leading-[1.05] tracking-tight text-slate-900">
-              Automasi Jurnal <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#1A73E8] to-blue-400">Tanpa Batas.</span>
-            </h1>
-            <p className="text-xl text-slate-500 leading-relaxed max-w-lg font-medium">Tradiary Pro menyinkronkan setiap transaksi MT5 Anda secara real-time. Dapatkan wawasan cerdas dari asisten AI pribadi Anda.</p>
-            <div className="flex flex-col sm:flex-row gap-5">
-              <button className="bg-[#1A73E8] text-white px-10 py-5 rounded-2xl font-bold text-lg flex items-center gap-3 shadow-2xl shadow-blue-200">Mulai Gratis <ArrowRight className="w-5 h-5" /></button>
-            </div>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="relative">
-            <div className="bg-white rounded-[2.5rem] shadow-2xl p-8 min-h-[550px] flex flex-col border border-white backdrop-blur-sm">
-              <div className="flex items-center justify-between pb-8 border-b mb-8">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white"><MessageSquare /></div>
-                  <div><h3 className="font-bold text-slate-800">Tradiary Assistant</h3><p className="text-[11px] font-bold text-green-500 uppercase tracking-widest">LIVE MT5 DATA</p></div>
+    <!-- Navigasi -->
+    <nav class="fixed top-0 w-full glass-nav border-b border-slate-200/50 z-50">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <div class="bg-[#1A73E8] p-2 rounded-xl shadow-lg shadow-blue-200 text-white">
+                    <i data-lucide="trending-up" class="w-6 h-6"></i>
                 </div>
-              </div>
-              <div className="flex-1 space-y-6 overflow-y-auto pr-2">
-                <AnimatePresence>
-                  {visibleMessages.map((msg) => (
-                    <motion.div key={msg.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-[85%] p-5 rounded-[2rem] text-sm font-medium ${msg.role === 'user' ? 'bg-[#1A73E8] text-white rounded-tr-none' : 'bg-slate-50 text-slate-700 rounded-tl-none border'}`}>{msg.content}</div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
+                <span class="text-2xl font-extrabold tracking-tight">Tradiary <span class="text-[#1A73E8]">Pro</span></span>
             </div>
-          </motion.div>
+            <div class="hidden md:flex items-center gap-10 text-[15px] font-semibold text-slate-500">
+                <a href="#fitur" class="hover:text-[#1A73E8] transition-colors">Fitur</a>
+                <a href="#analitik" class="hover:text-[#1A73E8] transition-colors">Analitik</a>
+                <a href="#keamanan" class="hover:text-[#1A73E8] transition-colors">Keamanan</a>
+                <button class="bg-[#1A73E8] text-white px-6 py-2.5 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-xl shadow-blue-100">Hubungkan MT5</button>
+            </div>
         </div>
-      </section>
+    </nav>
 
-      {/* Analytics Section - Header Dikembalikan Ke Versi Sebelumny Sesuai Permintaan */}
-      <section id="analitik" className="py-32 bg-white relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }} 
-            whileInView={{ opacity: 1, y: 0 }} 
-            viewport={{ once: true }} 
-            className="text-center space-y-5 mb-20"
-          >
-            <h2 className="text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight">Kecerdasan Data Trading</h2>
-            <p className="text-slate-500 text-lg font-medium max-w-2xl mx-auto leading-relaxed">
-              Metrik profesional yang biasanya memakan waktu berjam-jam untuk dihitung, kini tersaji instan dengan visualisasi tingkat tinggi.
-            </p>
-          </motion.div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <BentoCard 
-              delay={0.1}
-              visual={ProfitFactorVisual}
-              title="Profit Factor"
-              text="Perbandingan instan antara Gross Profit dan Gross Loss akun Anda."
-            />
-            <BentoCard 
-              delay={0.2}
-              visual={WinRateVisual}
-              title="Win Rate Precision"
-              text="Probabilitas kemenangan yang dihitung secara dinamis tiap milidetik."
-            />
-            <BentoCard 
-              delay={0.3}
-              visual={SyncVisual}
-              title="Auto-Sync API"
-              text="Sinkronisasi tanpa hambatan antara MT5 dan jurnal digital Anda."
-            />
-            <BentoCard 
-              delay={0.4}
-              colSpan="md:col-span-2"
-              visual={DataVizVisual}
-              title="Visualisasi Data"
-              text="Identifikasi tren pasar melalui grafik interaktif yang merepresentasikan fluktuasi portofolio Anda secara mendalam."
-            />
-            <BentoCard 
-              delay={0.5}
-              visual={EncryptionVisual}
-              title="Military Grade"
-              text="Enkripsi AES-256 tingkat perbankan yang melindungi data Anda."
-            />
-          </div>
+    <!-- Hero Section -->
+    <section class="relative pt-32 pb-20 lg:pt-52 lg:pb-32 px-6">
+        <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
+            <div class="space-y-10 reveal active">
+                <h1 class="text-6xl lg:text-7xl font-[800] leading-[1.05] tracking-tight text-slate-900">
+                    Automasi Jurnal <br />
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#1A73E8] to-blue-400">Tanpa Batas.</span>
+                </h1>
+                <p class="text-xl text-slate-500 leading-relaxed max-w-lg font-medium">
+                    Tradiary Pro menyinkronkan setiap transaksi MT5 Anda secara real-time. Dapatkan wawasan cerdas dari asisten AI pribadi Anda.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-5">
+                    <button class="bg-[#1A73E8] text-white px-10 py-5 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 shadow-2xl shadow-blue-200">
+                        Mulai Gratis <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat Demo -->
+            <div class="relative">
+                <div class="absolute -inset-4 bg-blue-100 rounded-[4rem] blur-3xl opacity-60 -z-10"></div>
+                <div class="bg-white rounded-[2.5rem] shadow-2xl p-8 min-h-[500px] flex flex-col border border-white">
+                    <div class="flex items-center justify-between pb-6 border-b mb-8">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-100">
+                                <i data-lucide="message-square"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800">Tradiary Assistant</h3>
+                                <p class="text-[11px] font-bold text-green-500 uppercase tracking-widest">LIVE MT5 DATA</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="chat-container" class="flex-1 space-y-6 overflow-y-auto max-h-[300px] pr-2 font-medium">
+                        <!-- Pesan otomatis -->
+                    </div>
+                </div>
+            </div>
         </div>
-      </section>
+    </section>
 
-      {/* Security Section - Animasi Ditingkatkan */}
-      <section id="keamanan" className="py-32 px-6 relative">
-        <motion.div 
-          whileInView={{ opacity: 1 }} 
-          className="max-w-6xl mx-auto bg-[#0F172A] rounded-[4rem] p-12 lg:p-24 relative overflow-hidden shadow-2xl border border-white/5"
-        >
-          {/* Enhanced Radar Waves Background */}
-          {[1, 2, 3, 4].map((i) => (
-            <motion.div 
-              key={i}
-              initial={{ scale: 0.5, opacity: 0.6 }}
-              animate={{ scale: 3.5, opacity: 0 }}
-              transition={{ repeat: Infinity, duration: 5, delay: i * 1.25, ease: "easeOut" }}
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 border border-blue-500/10 rounded-full z-0 pointer-events-none"
-            />
-          ))}
+    <!-- Bento Grid Analytics -->
+    <section id="analitik" class="py-32 bg-white relative">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center space-y-5 mb-24 reveal">
+                <h2 class="text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight">Kecerdasan Data Trading</h2>
+                <p class="text-slate-500 text-lg font-medium max-w-2xl mx-auto leading-relaxed">
+                    Metrik profesional yang biasanya memakan waktu berjam-jam untuk dihitung, kini tersaji instan dengan visualisasi tingkat tinggi.
+                </p>
+            </div>
 
-          {/* Floating Security Particles */}
-          {[...Array(6)].map((_, i) => (
-            <motion.div
-              key={i}
-              animate={{ 
-                y: [0, -30, 0], 
-                x: [0, 15, 0],
-                opacity: [0.2, 0.5, 0.2]
-              }}
-              transition={{ 
-                duration: 4 + i, 
-                repeat: Infinity, 
-                delay: i * 0.5 
-              }}
-              className="absolute hidden lg:block"
-              style={{
-                top: `${20 + i * 15}%`,
-                left: `${10 + (i % 3) * 30}%`,
-              }}
-            >
-              <div className="bg-blue-500/10 backdrop-blur-md p-3 rounded-2xl border border-white/5">
-                {i % 2 === 0 ? <Shield className="w-4 h-4 text-blue-400" /> : <EyeOff className="w-4 h-4 text-blue-400" />}
-              </div>
-            </motion.div>
-          ))}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- 1. Profit Factor -->
+                <div class="bento-card p-10 rounded-[3rem] bg-white border border-slate-100 flex flex-col items-center text-center shadow-sm hover:shadow-xl">
+                    <div class="h-32 w-full flex items-center justify-center mb-6">
+                        <div class="w-40 h-16 flex items-end gap-2 px-2 bg-slate-50 rounded-2xl border border-slate-100 p-3 relative overflow-hidden">
+                            <div class="flex-1 bg-[#1A73E8] rounded-lg anim-bar-profit shadow-[0_0_15px_rgba(26,115,232,0.3)]"></div>
+                            <div class="flex-1 bg-black rounded-lg anim-bar-loss opacity-40"></div>
+                        </div>
+                    </div>
+                    <h3 class="text-2xl font-black mb-3">Profit Factor</h3>
+                    <p class="text-slate-500 text-sm font-medium leading-relaxed">Perbandingan instan antara Gross Profit (Biru) dan Gross Loss (Hitam).</p>
+                </div>
 
-          <div className="relative z-10 grid lg:grid-cols-2 gap-16 items-center">
-            <motion.div 
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="space-y-8 text-center lg:text-left text-white"
-            >
-              <div className="relative inline-block">
-                <motion.div 
-                  animate={{ rotate: [0, 10, -10, 0] }}
-                  transition={{ repeat: Infinity, duration: 4 }}
-                  className="p-6 bg-blue-600/20 rounded-3xl border border-blue-500/30 backdrop-blur-md relative z-10"
-                >
-                  <ShieldCheck className="w-16 h-16 text-blue-400" />
-                </motion.div>
-                {/* Visual Scanner Beam */}
-                <motion.div 
-                  animate={{ y: [-30, 30, -30] }}
-                  transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
-                  className="absolute inset-x-0 top-1/2 h-0.5 bg-blue-400/40 shadow-[0_0_15px_rgba(96,165,250,0.8)] z-20"
-                />
-                <motion.div animate={{ opacity: [0.1, 0.4, 0.1] }} transition={{ repeat: Infinity, duration: 2 }} className="absolute inset-0 bg-blue-500 blur-3xl rounded-full -z-10" />
-              </div>
-              <h2 className="text-4xl lg:text-5xl font-black tracking-tight leading-tight">Privasi Anda Adalah Komitmen Kami</h2>
-              <p className="text-slate-400 text-lg font-medium leading-relaxed">
-                Keamanan adalah DNA kami. Kami memantau setiap akses secara real-time untuk menjamin kerahasiaan data Anda tetap terjaga. Setiap koneksi API dilakukan melalui tunnel terenkripsi tingkat tinggi.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <button className="bg-blue-600 text-white px-10 py-4 rounded-2xl font-bold flex items-center gap-3 shadow-2xl shadow-blue-900/40 hover:bg-blue-500 transition-all group">
-                  Pelajari Protokol Keamanan <Info className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                </button>
-              </div>
-            </motion.div>
+                <!-- 2. Win Rate Precision -->
+                <div class="bento-card p-10 rounded-[3rem] bg-white border border-slate-100 flex flex-col items-center text-center shadow-sm hover:shadow-xl">
+                    <div class="h-32 w-full flex items-center justify-center mb-6">
+                        <div class="relative w-24 h-24">
+                            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="42" stroke="#f1f5f9" stroke-width="10" fill="transparent" />
+                                <circle cx="50" cy="50" r="42" stroke="#1A73E8" stroke-width="10" fill="transparent" stroke-dasharray="264" stroke-dashoffset="84" stroke-linecap="round" />
+                            </svg>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                <span class="text-xl font-black">68%</span>
+                                <span class="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Win Rate</span>
+                            </div>
+                        </div>
+                    </div>
+                    <h3 class="text-2xl font-black mb-3">Win Rate Precision</h3>
+                    <p class="text-slate-500 text-sm font-medium leading-relaxed">Akurasi kemenangan yang dihitung secara dinamis tiap milidetik.</p>
+                </div>
+
+                <!-- 3. Auto-Sync API -->
+                <div class="bento-card p-10 rounded-[3rem] bg-white border border-slate-100 flex flex-col items-center text-center shadow-sm hover:shadow-xl">
+                    <div class="h-32 w-full flex items-center justify-center mb-6">
+                        <div class="relative flex items-center gap-6 z-10">
+                            <div class="p-3 bg-white rounded-xl shadow-sm border border-slate-100 text-slate-400">
+                                <i data-lucide="database"></i>
+                            </div>
+                            <div class="absolute inset-0 flex items-center justify-center px-4">
+                                <div class="w-32 h-0.5 bg-slate-100 relative overflow-hidden rounded-full">
+                                    <div class="absolute inset-y-0 w-8 bg-gradient-to-r from-transparent via-blue-400 to-transparent anim-sync-packet"></div>
+                                </div>
+                            </div>
+                            <div class="p-3 bg-blue-600 rounded-xl shadow-lg shadow-blue-200 text-white animate-spin">
+                                <i data-lucide="refresh-cw"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <h3 class="text-2xl font-black mb-3">Auto-Sync API</h3>
+                    <p class="text-slate-500 text-sm font-medium leading-relaxed">Sinkronisasi data tanpa hambatan antara MT5 dan jurnal Anda.</p>
+                </div>
+
+                <!-- 4. Visualisasi Data (Wide Card) - DIRAPIKAN -->
+                <div class="bento-card md:col-span-2 p-10 rounded-[3rem] bg-white border border-slate-100 flex flex-col items-center text-center shadow-sm hover:shadow-xl">
+                    <div class="h-36 w-full flex items-end justify-center gap-3 mb-6 p-6 bg-slate-50 rounded-2xl">
+                        <div class="w-8 bg-blue-300 rounded-t-lg anim-viz-bar h-[40%]" style="animation-delay: 0.1s;"></div>
+                        <div class="w-8 bg-blue-400 rounded-t-lg anim-viz-bar h-[65%]" style="animation-delay: 0.3s;"></div>
+                        <div class="w-8 bg-blue-500 rounded-t-lg anim-viz-bar h-[50%]" style="animation-delay: 0.2s;"></div>
+                        <div class="w-8 bg-blue-600 rounded-t-lg anim-viz-bar h-[85%]" style="animation-delay: 0.5s;"></div>
+                        <div class="w-8 bg-blue-500 rounded-t-lg anim-viz-bar h-[60%]" style="animation-delay: 0.4s;"></div>
+                    </div>
+                    <h3 class="text-2xl font-black mb-3 tracking-tight">Visualisasi Data</h3>
+                    <p class="text-slate-500 text-[15px] font-medium leading-relaxed max-w-md mx-auto">Grafik interaktif yang merepresentasikan fluktuasi portofolio Anda secara mendalam dan real-time.</p>
+                </div>
+
+                <!-- 5. Military Grade Encryption - DIRAPIKAN -->
+                <div class="bento-card p-10 rounded-[3rem] bg-white border border-slate-100 flex flex-col items-center text-center shadow-sm hover:shadow-xl overflow-hidden">
+                    <div class="h-36 w-full flex items-center justify-center mb-6 relative">
+                        <div class="p-8 bg-blue-50 rounded-[2rem] relative border border-blue-100 group shadow-inner">
+                            <i data-lucide="lock" class="w-12 h-12 text-[#1A73E8]"></i>
+                            <!-- Laser Scan Line yang lebih rapi -->
+                            <div class="absolute inset-x-0 h-1 bg-blue-400 shadow-[0_0_15px_#1A73E8] anim-laser z-20"></div>
+                            <!-- Subtle Glow -->
+                            <div class="absolute inset-0 bg-blue-400/5 blur-xl rounded-full"></div>
+                        </div>
+                    </div>
+                    <h3 class="text-2xl font-black mb-3 tracking-tight">Military Grade</h3>
+                    <p class="text-slate-500 text-[15px] font-medium leading-relaxed mx-auto max-w-[240px]">Enkripsi AES-256 yang melindungi setiap bit data trading Anda secara proaktif.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Keamanan Section -->
+    <section id="keamanan" class="py-32 px-6">
+        <div class="max-w-6xl mx-auto bg-[#0F172A] rounded-[4rem] p-12 lg:p-24 relative overflow-hidden text-center text-white shadow-2xl">
+            <div class="absolute top-1/2 left-1/2 radar-ring border-2 border-blue-500/20 w-64 h-64 rounded-full"></div>
+            <div class="absolute top-1/2 left-1/2 radar-ring border-2 border-blue-500/10 w-64 h-64 rounded-full" style="animation-delay: 1.5s;"></div>
             
-            <div className="hidden lg:flex justify-center relative">
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                className="relative w-80 h-80 flex items-center justify-center"
-              >
-                {/* Rotating Rings */}
-                <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 15, ease: "linear" }} className="absolute inset-0 border-[3px] border-dashed border-blue-500/20 rounded-full" />
-                <motion.div animate={{ rotate: -360 }} transition={{ repeat: Infinity, duration: 25, ease: "linear" }} className="absolute inset-10 border border-dashed border-blue-400/10 rounded-full" />
-                <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 3 }} className="p-10 bg-white/5 rounded-full border border-white/5 backdrop-blur-sm">
-                  <Cpu className="w-16 h-16 text-blue-400 drop-shadow-[0_0_20px_rgba(96,165,250,0.6)]" />
-                </motion.div>
-                
-                {/* Animated Connection Lines Visual */}
-                <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20">
-                  <motion.circle cx="50%" cy="10%" r="4" fill="#60A5FA" animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 2 }} />
-                  <motion.circle cx="90%" cy="50%" r="4" fill="#60A5FA" animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 2, delay: 0.5 }} />
-                  <motion.circle cx="50%" cy="90%" r="4" fill="#60A5FA" animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 2, delay: 1 }} />
-                </svg>
-              </motion.div>
+            <div class="relative z-10 space-y-10 reveal">
+                <div class="w-20 h-20 bg-blue-600/20 border border-blue-500/30 rounded-3xl flex items-center justify-center mx-auto backdrop-blur-md">
+                    <i data-lucide="shield-check" class="w-10 h-10 text-blue-400"></i>
+                </div>
+                <h2 class="text-4xl lg:text-5xl font-[900] tracking-tight">Privasi Anda Adalah Komitmen Kami</h2>
+                <p class="text-slate-400 text-lg max-w-2xl mx-auto leading-relaxed font-medium">
+                    Kami memantau setiap akses secara real-time untuk menjamin kerahasiaan data Anda tetap terjaga. Setiap koneksi API dilakukan melalui tunnel terenkripsi tingkat tinggi.
+                </p>
+                <div class="pt-4">
+                    <button class="bg-[#1A73E8] text-white px-10 py-4 rounded-2xl font-bold hover:bg-blue-600 transition-all shadow-2xl shadow-blue-900/40">
+                        Pelajari Protokol Keamanan
+                    </button>
+                </div>
             </div>
-          </div>
-        </motion.div>
-      </section>
-
-      <footer className="bg-white border-t py-20 px-6">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-12">
-          <div className="flex items-center gap-2.5">
-            <div className="bg-[#1A73E8] p-1.5 rounded-lg shadow-lg shadow-blue-100"><TrendingUp className="text-white w-5 h-5" /></div>
-            <span className="text-2xl font-black tracking-tighter">Tradiary <span className="text-[#1A73E8]">Pro</span></span>
-          </div>
-          <p className="text-slate-400 font-bold text-sm tracking-wide">© 2024 TRADIARY PRO. ALL RIGHTS RESERVED.</p>
         </div>
-      </footer>
-    </div>
-  );
-};
+    </section>
 
-export default App;
+    <!-- Footer -->
+    <footer class="bg-white border-t py-20 px-6 text-center">
+        <div class="flex flex-col items-center gap-6">
+            <div class="flex items-center gap-2.5">
+                <div class="bg-[#1A73E8] p-1.5 rounded-lg text-white">
+                    <i data-lucide="trending-up" class="w-5 h-5"></i>
+                </div>
+                <span class="text-2xl font-black">Tradiary <span class="text-[#1A73E8]">Pro</span></span>
+            </div>
+            <p class="text-slate-400 font-bold text-xs tracking-[0.2em] uppercase pt-4">© 2024 TRADIARY PRO. ALL RIGHTS RESERVED.</p>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+        const chatContainer = document.getElementById('chat-container');
+        const messages = [
+            { role: 'user', content: 'Bagaimana performa trading Gold saya di bulan Maret?' },
+            { role: 'ai', content: 'Berdasarkan data MT5, Win Rate Anda 68% dengan profit yang konsisten pada sesi London.' },
+            { role: 'user', content: 'Apa penyebab drawdown kemarin?' },
+            { role: 'ai', content: 'Drawdown sebesar 2.4% terjadi karena volatilitas tinggi saat rilis data NFP.' }
+        ];
+
+        let index = 0;
+        function addMessage() {
+            if (index < messages.length) {
+                const msg = messages[index];
+                const div = document.createElement('div');
+                div.className = `flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} transition-all duration-500 ease-out opacity-0 translate-y-4`;
+                div.innerHTML = `
+                    <div class="max-w-[85%] p-5 rounded-[2rem] text-sm shadow-sm ${msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'}">
+                        ${msg.content}
+                    </div>
+                `;
+                chatContainer.appendChild(div);
+                setTimeout(() => {
+                    div.style.opacity = '1';
+                    div.style.transform = 'translateY(0)';
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }, 100);
+                index++;
+                setTimeout(addMessage, 3000);
+            }
+        }
+        setTimeout(addMessage, 1000);
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('active');
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>
