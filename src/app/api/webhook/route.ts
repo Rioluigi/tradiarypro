@@ -10,6 +10,7 @@ const supabaseAdmin = createClient(
 
 interface WebhookBody {
   user_id: string;
+  account_id?: string;
   ticket: number;
   symbol: string;
   type: string;
@@ -22,7 +23,7 @@ interface WebhookBody {
   commission: number;
 }
 
-const REQUIRED_FIELDS: (keyof WebhookBody)[] = [
+const REQUIRED_FIELDS: (keyof Omit<WebhookBody, 'account_id'>)[] = [
   'user_id',
   'ticket',
   'symbol',
@@ -63,7 +64,7 @@ function validatePayload(body: Record<string, unknown>): {
   }
 
   // Validate numeric fields
-  const numericFields: (keyof WebhookBody)[] = [
+  const numericFields: (keyof Omit<WebhookBody, 'account_id'>)[] = [
     'ticket',
     'volume',
     'open_price',
@@ -110,10 +111,21 @@ function validatePayload(body: Record<string, unknown>): {
     };
   }
 
+  // Validate account_id is a valid UUID format if provided
+  if (body.account_id !== undefined && body.account_id !== null && body.account_id !== '') {
+    if (!uuidRegex.test(String(body.account_id))) {
+      return {
+        valid: false,
+        error: 'Invalid data format: account_id must be a valid UUID',
+      };
+    }
+  }
+
   return {
     valid: true,
     data: {
       user_id: String(body.user_id),
+      ...(body.account_id && body.account_id !== '' ? { account_id: String(body.account_id) } : {}),
       ticket: Number(body.ticket),
       symbol: String(body.symbol),
       type: tradeType,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Copy,
   Check,
@@ -13,8 +13,13 @@ import {
   FileCode,
   Settings,
   AlertCircle,
+  Trash2,
+  Plus,
+  Download,
+  Layers,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { createClient } from '@/lib/supabase/client';
 
 interface WebhookConfigClientProps {
   userId: string;
@@ -25,79 +30,208 @@ interface WebhookConfigClientProps {
 const WEBHOOK_URL = 'https://tradiary-zeta.vercel.app/api/webhook';
 
 const EA_CODE = `//+------------------------------------------------------------------+
-//| Tradiary EA - Webhook Sender                                       |
-//| Sends closed trade data to Tradiary webhook endpoint               |
+//|                                                 Tradiary_EA.mq5   |
+//|                                                         Tradiary |
+//|                                             https://tradiary.pro |
 //+------------------------------------------------------------------+
 #property copyright "Tradiary"
+#property link      "https://tradiary.pro"
 #property version   "1.00"
+#property description "Expert Advisor to sync closed trades with Tradiary dashboard via webhook."
 #property strict
 
-input string WebhookURL = "${WEBHOOK_URL}";
-input string UserID = ""; // ← Paste your User ID here
+//--- Input parameters
+input string WebhookURL = "\${WEBHOOK_URL}";
+input string UserID     = ""; // Paste your User ID here
+input string AccountID  = ""; // Paste your Account ID here
+input bool   EnableLogs = true;
 
-#include <Trade\\Trade.mqh>
-
-int OnInit() {
-   Print("Tradiary EA initialized. Webhook URL: ", WebhookURL);
+//+------------------------------------------------------------------+
+//| Expert initialization function                                   |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+   if(EnableLogs)
+   {
+      Print("Tradiary EA Initialized.");
+      Print("Webhook URL: ", WebhookURL);
+      Print("User ID:     ", UserID);
+      Print("Account ID:  ", AccountID);
+   }
+   
+   // Check if WebhookURL or UserID is empty
+   if(StringLen(WebhookURL) == 0)
+   {
+      Print("❌ Error: WebhookURL is not set.");
+      return(INIT_PARAMETERS_INCORRECT);
+   }
+   if(StringLen(UserID) == 0)
+   {
+      Print("❌ Error: UserID is not set.");
+      return(INIT_PARAMETERS_INCORRECT);
+   }
+   
    return(INIT_SUCCEEDED);
 }
 
-void OnDeinit(const int reason) {
-   Print("Tradiary EA deinitialized.");
+//+------------------------------------------------------------------+
+//| Expert deinitialization function                                 |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+   if(EnableLogs)
+   {
+      Print("Tradiary EA Deinitialized. Reason: ", reason);
+   }
 }
 
-void OnTrade() {
-   // Check for recently closed positions
-   int totalDeals = HistoryDealsTotal();
-   if(totalDeals <= 0) return;
+//+------------------------------------------------------------------+
+//| Helper to convert datetime to ISO 8601 string                    |
+//+------------------------------------------------------------------+
+string TimeToISOString(datetime time)
+{
+   MqlDateTime dt;
+   TimeToStruct(time, dt);
+   return StringFormat("%04d-%02d-%02dT%02d:%02d:%02dZ", dt.year, dt.mon, dt.day, dt.hour, dt.min, dt.sec);
+}
+
+//+------------------------------------------------------------------+
+//| Expert trade transaction function                                |
+//+------------------------------------------------------------------+
+void OnTradeTransaction(const MqlTradeTransaction& trans,
+                        const MqlTradeRequest& request,
+                        const MqlTradeResult& result)
+{
+   // We are only interested in additions of deals to the history
+   if(trans.type != TRADE_TRANSACTION_DEAL_ADD)
+   {
+      return;
+   }
    
-   HistorySelect(TimeCurrent() - 60, TimeCurrent());
+   ulong ticket = trans.deal;
+   if(ticket == 0)
+   {
+      return;
+   }
    
-   for(int i = HistoryDealsTotal() - 1; i >= 0; i--) {
-      ulong ticket = HistoryDealGetTicket(i);
-      if(ticket == 0) continue;
-      
-      ENUM_DEAL_ENTRY entry = (ENUM_DEAL_ENTRY)HistoryDealGetInteger(ticket, DEAL_ENTRY);
-      if(entry != DEAL_ENTRY_OUT) continue;
-      
-      string symbol = HistoryDealGetString(ticket, DEAL_SYMBOL);
-      long type = HistoryDealGetInteger(ticket, DEAL_TYPE);
-      double volume = HistoryDealGetDouble(ticket, DEAL_VOLUME);
-      double price = HistoryDealGetDouble(ticket, DEAL_PRICE);
-      double profit = HistoryDealGetDouble(ticket, DEAL_PROFIT);
-      double commission = HistoryDealGetDouble(ticket, DEAL_COMMISSION);
-      datetime time = (datetime)HistoryDealGetInteger(ticket, DEAL_TIME);
-      
-      string typeStr = (type == DEAL_TYPE_BUY) ? "SELL" : "BUY";
-      
-      string json = "{\\"user_id\\": \\"" + UserID + "\\","
-         + "\\"ticket\\": " + IntegerToString((int)ticket) + ","
-         + "\\"symbol\\": \\"" + symbol + "\\","
-         + "\\"type\\": \\"" + typeStr + "\\","
-         + "\\"volume\\": " + DoubleToString(volume, 2) + ","
-         + "\\"open_price\\": " + DoubleToString(price, 5) + ","
-         + "\\"close_price\\": " + DoubleToString(price, 5) + ","
-         + "\\"open_time\\": \\"" + TimeToString(time, TIME_DATE|TIME_SECONDS) + "\\","
-         + "\\"close_time\\": \\"" + TimeToString(time, TIME_DATE|TIME_SECONDS) + "\\","
-         + "\\"profit\\": " + DoubleToString(profit, 2) + ","
-         + "\\"commission\\": " + DoubleToString(commission, 2)
-         + "}";
-      
-      // Send HTTP POST
-      string headers = "Content-Type: application/json\\r\\n";
-      char post[];
-      char result[];
-      string resultHeaders;
-      
-      StringToCharArray(json, post, 0, WHOLE_ARRAY, CP_UTF8);
-      
-      int res = WebRequest("POST", WebhookURL, headers, 5000, post, result, resultHeaders);
-      
-      if(res == 200) {
-         Print("✅ Trade sent to Tradiary: ", symbol, " ", typeStr, " P/L: ", profit);
-      } else {
-         Print("❌ Failed to send trade. HTTP ", res);
+   // Select the deal from history to inspect it
+   if(!HistoryDealSelect(ticket))
+   {
+      if(EnableLogs)
+      {
+         Print("❌ Failed to select deal ticket: ", ticket);
       }
+      return;
+   }
+   
+   // Get deal entry type
+   ENUM_DEAL_ENTRY entry = (ENUM_DEAL_ENTRY)HistoryDealGetInteger(ticket, DEAL_ENTRY);
+   
+   // We only process closing deals (out, out by, or in/out reversal)
+   if(entry != DEAL_ENTRY_OUT && entry != DEAL_ENTRY_OUT_BY && entry != DEAL_ENTRY_INOUT)
+   {
+      if(EnableLogs)
+      {
+         Print("ℹ️ Deal ", ticket, " ignored (not a closing deal, entry type: ", EnumToString(entry), ")");
+      }
+      return;
+   }
+   
+   // Gather deal information
+   string symbol = HistoryDealGetString(ticket, DEAL_SYMBOL);
+   long type = HistoryDealGetInteger(ticket, DEAL_TYPE);
+   double volume = HistoryDealGetDouble(ticket, DEAL_VOLUME);
+   double price = HistoryDealGetDouble(ticket, DEAL_PRICE); // Close price
+   double profit = HistoryDealGetDouble(ticket, DEAL_PROFIT);
+   double commission = HistoryDealGetDouble(ticket, DEAL_COMMISSION);
+   datetime close_time = (datetime)HistoryDealGetInteger(ticket, DEAL_TIME);
+   
+   // Determine the trade type (original position direction)
+   string typeStr = (type == DEAL_TYPE_BUY) ? "SELL" : "BUY";
+   
+   // Find the corresponding opening deal to get the correct open price and open time
+   ulong position_id = HistoryDealGetInteger(ticket, DEAL_POSITION_ID);
+   double open_price = 0;
+   datetime open_time = 0;
+   
+   if(HistorySelectByPosition(position_id))
+   {
+      int position_deals = HistoryDealsTotal();
+      for(int j = 0; j < position_deals; j++)
+      {
+         ulong deal_ticket = HistoryDealGetTicket(j);
+         if(deal_ticket == 0) continue;
+         
+         ENUM_DEAL_ENTRY deal_entry = (ENUM_DEAL_ENTRY)HistoryDealGetInteger(deal_ticket, DEAL_ENTRY);
+         if(deal_entry == DEAL_ENTRY_IN)
+         {
+            open_price = HistoryDealGetDouble(deal_ticket, DEAL_PRICE);
+            open_time = (datetime)HistoryDealGetInteger(deal_ticket, DEAL_TIME);
+            break;
+         }
+      }
+   }
+   
+   // Fallback if opening deal is not found in history
+   if(open_time == 0)
+   {
+      open_price = price;
+      open_time = close_time - 1; // Ensure close_time is strictly greater than open_time
+      if(EnableLogs)
+      {
+         Print("⚠️ Opening deal not found in history for position ", position_id, ". Using fallback open time.");
+      }
+   }
+   
+   // Format timestamps as ISO 8601 strings
+   string openTimeISO = TimeToISOString(open_time);
+   string closeTimeISO = TimeToISOString(close_time);
+   
+   // Build JSON payload
+   string json = "{";
+   json += "\\\\"user_id\\\\":\\\\"" + UserID + "\\\\",";
+   if(StringLen(AccountID) > 0)
+   {
+      json += "\\\\"account_id\\\\":\\\\"" + AccountID + "\\\\",";
+   }
+   json += "\\\\"ticket\\\\":" + IntegerToString((long)ticket) + ",";
+   json += "\\\\"symbol\\\\":\\\\"" + symbol + "\\\\",";
+   json += "\\\\"type\\\\":\\\\"" + typeStr + "\\\\",";
+   json += "\\\\"volume\\\\":" + DoubleToString(volume, 2) + ",";
+   json += "\\\\"open_price\\\\":" + DoubleToString(open_price, 5) + ",";
+   json += "\\\\"close_price\\\\":" + DoubleToString(price, 5) + ",";
+   json += "\\\\"open_time\\\\":\\\\"" + openTimeISO + "\\\\",";
+   json += "\\\\"close_time\\\\":\\\\"" + closeTimeISO + "\\\\",";
+   json += "\\\\"profit\\\\":" + DoubleToString(profit, 2) + ",";
+   json += "\\\\"commission\\\\":" + DoubleToString(commission, 2);
+   json += "}";
+   
+   if(EnableLogs)
+   {
+      Print("Sending closed trade webhook to: ", WebhookURL);
+      Print("Payload: ", json);
+   }
+   
+   // Send HTTP POST request
+   string headers = "Content-Type: application/json\\\\r\\\\n";
+   char post[];
+   char result_data[];
+   string result_headers;
+   
+   StringToCharArray(json, post, 0, WHOLE_ARRAY, CP_UTF8);
+   
+   // Call WebRequest synchronously (blocking) with a 5-second timeout
+   int response_code = WebRequest("POST", WebhookURL, headers, 5000, post, result_data, result_headers);
+   
+   if(response_code == 200)
+   {
+      Print("✅ Trade successfully synced with Tradiary. Ticket: ", ticket, ", Symbol: ", symbol, ", P/L: ", profit);
+   }
+   else
+   {
+      string response_body = CharArrayToString(result_data, 0, WHOLE_ARRAY, CP_UTF8);
+      Print("❌ Failed to sync trade. HTTP Status Code: ", response_code);
+      Print("Response Body: ", response_body);
    }
 }`;
 
@@ -111,7 +245,129 @@ export default function WebhookConfigClient({
   const [guideOpen, setGuideOpen] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
 
-  const copyToClipboard = async (text: string, type: 'url' | 'id' | 'code') => {
+  interface Account {
+    id: string;
+    user_id: string;
+    account_number: string;
+    broker: string;
+    platform: 'MT4' | 'MT5';
+    balance: number;
+    currency: string;
+    label: string | null;
+    is_active: boolean;
+    created_at: string;
+  }
+
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [loadingAccounts, setLoadingAccounts] = useState(true);
+  const [copiedAccountId, setCopiedAccountId] = useState<string | null>(null);
+
+  // Form states
+  const [accountNumber, setAccountNumber] = useState('');
+  const [broker, setBroker] = useState('');
+  const [platform, setPlatform] = useState<'MT4' | 'MT5'>('MT5');
+  const [currency, setCurrency] = useState('USD');
+  const [label, setLabel] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [formSuccess, setFormSuccess] = useState<string | null>(null);
+
+  const supabase = createClient();
+
+  const fetchAccounts = async () => {
+    try {
+      setLoadingAccounts(true);
+      const { data, error } = await supabase
+        .from('accounts')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setAccounts(data || []);
+    } catch (err: any) {
+      console.error('Error fetching accounts:', err.message);
+    } finally {
+      setLoadingAccounts(false);
+    }
+  };
+
+  useEffect(() => {
+    if (userId) {
+      fetchAccounts();
+    }
+  }, [userId]);
+
+  const handleAddAccount = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError(null);
+    setFormSuccess(null);
+
+    if (!accountNumber.trim()) {
+      setFormError('Account Number is required');
+      return;
+    }
+    if (!broker.trim()) {
+      setFormError('Broker name is required');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      const { data, error } = await supabase
+        .from('accounts')
+        .insert([
+          {
+            user_id: userId,
+            account_number: accountNumber.trim(),
+            broker: broker.trim(),
+            platform,
+            currency,
+            label: label.trim() || null,
+            balance: 0.00,
+            is_active: true
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setFormSuccess('Account added successfully!');
+      setAccountNumber('');
+      setBroker('');
+      setLabel('');
+      setAccounts(prev => [data, ...prev]);
+
+      setTimeout(() => setFormSuccess(null), 3000);
+    } catch (err: any) {
+      console.error('Error adding account:', err);
+      setFormError(err.message || 'Failed to add account');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteAccount = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this account? This will also delete all associated trades.')) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('accounts')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      setAccounts(prev => prev.filter(acc => acc.id !== id));
+    } catch (err: any) {
+      console.error('Error deleting account:', err);
+      alert(err.message || 'Failed to delete account');
+    }
+  };
+
+  const copyToClipboard = async (text: string, type: 'url' | 'id' | 'code' | 'account') => {
     try {
       await navigator.clipboard.writeText(text);
       if (type === 'url') {
@@ -120,9 +376,12 @@ export default function WebhookConfigClient({
       } else if (type === 'id') {
         setCopiedId(true);
         setTimeout(() => setCopiedId(false), 2000);
-      } else {
+      } else if (type === 'code') {
         setCopiedCode(true);
         setTimeout(() => setCopiedCode(false), 2000);
+      } else if (type === 'account') {
+        setCopiedAccountId(text);
+        setTimeout(() => setCopiedAccountId(null), 2000);
       }
     } catch {
       // fallback
@@ -254,6 +513,224 @@ export default function WebhookConfigClient({
               </>
             )}
           </button>
+        </div>
+      </div>
+
+      {/* Download EA Card */}
+      <div className="rounded-2xl border border-slate-700/50 bg-slate-800/50 backdrop-blur-sm p-6 shadow-xl shadow-black/10 animate-fade-in delay-150">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+              <FileCode size={24} className="text-blue-400" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-slate-100">
+                Tradiary Expert Advisor
+              </h2>
+              <p className="text-sm text-slate-400 mt-1">
+                Download the MQ5 Expert Advisor file to run on your MetaTrader 5 terminal.
+              </p>
+            </div>
+          </div>
+          <a
+            href="/downloads/Tradiary_EA.mq5"
+            download="Tradiary_EA.mq5"
+            className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-all duration-200 shadow-lg shadow-blue-500/25 whitespace-nowrap"
+          >
+            <Download size={18} />
+            Download EA
+          </a>
+        </div>
+      </div>
+
+      {/* Account Management Card */}
+      <div className="rounded-2xl border border-slate-700/50 bg-slate-800/50 backdrop-blur-sm p-6 shadow-xl shadow-black/10 animate-fade-in delay-250">
+        <div className="flex items-center gap-2 mb-6">
+          <Layers size={18} className="text-blue-400" />
+          <h2 className="text-lg font-semibold text-slate-100">
+            Account Management
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Left Side: Add Account Form */}
+          <div>
+            <h3 className="text-md font-semibold text-slate-200 mb-4">Add Account</h3>
+            <form onSubmit={handleAddAccount} className="space-y-4">
+              {formError && (
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-center gap-2 animate-fade-in">
+                  <AlertCircle size={14} className="flex-shrink-0" />
+                  <span>{formError}</span>
+                </div>
+              )}
+              {formSuccess && (
+                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs flex items-center gap-2 animate-fade-in">
+                  <Check size={14} className="flex-shrink-0" />
+                  <span>{formSuccess}</span>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-medium text-slate-400 mb-1.5">
+                  Account Number *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. 50912345"
+                  value={accountNumber}
+                  onChange={(e) => setAccountNumber(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-900/80 border border-slate-700/50 text-white focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-500 text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-400 mb-1.5">
+                  Broker *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. IC Markets"
+                  value={broker}
+                  onChange={(e) => setBroker(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-900/80 border border-slate-700/50 text-white focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-500 text-sm"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-1.5">
+                    Platform *
+                  </label>
+                  <select
+                    value={platform}
+                    onChange={(e) => setPlatform(e.target.value as 'MT4' | 'MT5')}
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-900/80 border border-slate-700/50 text-white focus:outline-none focus:border-blue-500 transition-colors text-sm cursor-pointer"
+                  >
+                    <option value="MT4" className="bg-slate-900 text-white">MT4</option>
+                    <option value="MT5" className="bg-slate-900 text-white">MT5</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-1.5">
+                    Currency *
+                  </label>
+                  <select
+                    value={currency}
+                    onChange={(e) => setCurrency(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-900/80 border border-slate-700/50 text-white focus:outline-none focus:border-blue-500 transition-colors text-sm cursor-pointer"
+                  >
+                    <option value="USD" className="bg-slate-900 text-white">USD</option>
+                    <option value="IDR" className="bg-slate-900 text-white">IDR</option>
+                    <option value="EUR" className="bg-slate-900 text-white">EUR</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-400 mb-1.5">
+                  Label / Name
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Personal Live Account"
+                  value={label}
+                  onChange={(e) => setLabel(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-900/80 border border-slate-700/50 text-white focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-500 text-sm"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full px-4 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 disabled:cursor-not-allowed text-white text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25 mt-2"
+              >
+                {submitting ? (
+                  'Adding...'
+                ) : (
+                  <>
+                    <Plus size={16} />
+                    Add Account
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+
+          {/* Right Side: Account List */}
+          <div className="flex flex-col h-full">
+            <h3 className="text-md font-semibold text-slate-200 mb-4">Your Accounts</h3>
+            
+            {loadingAccounts ? (
+              <div className="space-y-3 animate-pulse">
+                {[1, 2].map((n) => (
+                  <div key={n} className="h-24 rounded-xl bg-slate-900/40 border border-slate-700/30" />
+                ))}
+              </div>
+            ) : accounts.length === 0 ? (
+              <div className="flex-1 flex flex-col items-center justify-center p-6 text-center border border-dashed border-slate-700/50 rounded-xl bg-slate-900/25">
+                <Layers size={32} className="text-slate-600 mb-2" />
+                <p className="text-sm text-slate-400 font-medium">No accounts added yet</p>
+                <p className="text-xs text-slate-500 mt-1">Add your trading account to manage and generate webhooks</p>
+              </div>
+            ) : (
+              <div className="space-y-3 overflow-y-auto max-h-[360px] pr-1">
+                {accounts.map((account) => (
+                  <div
+                    key={account.id}
+                    className="p-4 rounded-xl bg-slate-900/40 border border-slate-700/30 flex items-center justify-between gap-4 transition-all duration-200 hover:border-slate-700/50"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold text-slate-100 truncate text-sm">
+                          {account.label || `Account #${account.account_number}`}
+                        </span>
+                        <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                          {account.platform}
+                        </span>
+                        <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          {account.currency}
+                        </span>
+                      </div>
+                      
+                      <div className="text-xs text-slate-400 mt-1 truncate">
+                        {account.broker} • No: {account.account_number}
+                      </div>
+                      
+                      <div className="flex items-center gap-1.5 mt-2">
+                        <span className="text-[10px] font-mono text-slate-500 truncate max-w-[150px] sm:max-w-none">
+                          ID: {account.id}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard(account.id, 'account')}
+                          className="text-slate-500 hover:text-slate-300 transition-colors p-1"
+                          title="Copy Account ID"
+                        >
+                          {copiedAccountId === account.id ? (
+                            <Check size={12} className="text-emerald-400" />
+                          ) : (
+                            <Copy size={12} />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteAccount(account.id)}
+                      className="p-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-colors flex-shrink-0"
+                      title="Delete Account"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

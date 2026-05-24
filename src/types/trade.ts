@@ -1,6 +1,7 @@
 export interface Trade {
   id: string;
   user_id: string;
+  account_id?: string;
   ticket: number;
   symbol: string;
   type: 'BUY' | 'SELL';
@@ -16,6 +17,7 @@ export interface Trade {
 
 export interface TradeInsert {
   user_id: string;
+  account_id?: string;
   ticket: number;
   symbol: string;
   type: 'BUY' | 'SELL';
@@ -30,6 +32,7 @@ export interface TradeInsert {
 
 export interface WebhookPayload {
   user_id: string;
+  account_id?: string;
   ticket: number;
   symbol: string;
   type: string;
