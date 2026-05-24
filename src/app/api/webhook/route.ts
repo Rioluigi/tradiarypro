@@ -194,12 +194,13 @@ export async function POST(request: NextRequest) {
       { success: true, id: data.id },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error('Webhook error:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
       {
         error: 'Internal server error',
-        details: error?.message || String(error)
+        details: errorMessage
       },
       { status: 500 }
     );

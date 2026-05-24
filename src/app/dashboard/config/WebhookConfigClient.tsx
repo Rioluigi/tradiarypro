@@ -274,29 +274,30 @@ export default function WebhookConfigClient({
 
   const supabase = createClient();
 
-  const fetchAccounts = async () => {
-    try {
-      setLoadingAccounts(true);
-      const { data, error } = await supabase
-        .from('accounts')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setAccounts(data || []);
-    } catch (err: any) {
-      console.error('Error fetching accounts:', err.message);
-    } finally {
-      setLoadingAccounts(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchAccounts = async () => {
+      try {
+        setLoadingAccounts(true);
+        const { data, error } = await supabase
+          .from('accounts')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        setAccounts(data || []);
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        console.error('Error fetching accounts:', errorMsg);
+      } finally {
+        setLoadingAccounts(false);
+      }
+    };
+
     if (userId) {
       fetchAccounts();
     }
-  }, [userId]);
+  }, [userId, supabase]);
 
   const handleAddAccount = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -340,9 +341,10 @@ export default function WebhookConfigClient({
       setAccounts(prev => [data, ...prev]);
 
       setTimeout(() => setFormSuccess(null), 3000);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error adding account:', err);
-      setFormError(err.message || 'Failed to add account');
+      const errorMsg = err instanceof Error ? err.message : 'Failed to add account';
+      setFormError(errorMsg);
     } finally {
       setSubmitting(false);
     }
@@ -361,9 +363,10 @@ export default function WebhookConfigClient({
 
       if (error) throw error;
       setAccounts(prev => prev.filter(acc => acc.id !== id));
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error deleting account:', err);
-      alert(err.message || 'Failed to delete account');
+      const errorMsg = err instanceof Error ? err.message : 'Failed to delete account';
+      alert(errorMsg);
     }
   };
 
@@ -662,7 +665,7 @@ export default function WebhookConfigClient({
           {/* Right Side: Account List */}
           <div className="flex flex-col h-full">
             <h3 className="text-md font-semibold text-slate-200 mb-4">Your Accounts</h3>
-            
+
             {loadingAccounts ? (
               <div className="space-y-3 animate-pulse">
                 {[1, 2].map((n) => (
@@ -694,11 +697,11 @@ export default function WebhookConfigClient({
                           {account.currency}
                         </span>
                       </div>
-                      
+
                       <div className="text-xs text-slate-400 mt-1 truncate">
                         {account.broker} • No: {account.account_number}
                       </div>
-                      
+
                       <div className="flex items-center gap-1.5 mt-2">
                         <span className="text-[10px] font-mono text-slate-500 truncate max-w-[150px] sm:max-w-none">
                           ID: {account.id}
@@ -717,7 +720,7 @@ export default function WebhookConfigClient({
                         </button>
                       </div>
                     </div>
-                    
+
                     <button
                       type="button"
                       onClick={() => handleDeleteAccount(account.id)}
@@ -746,7 +749,7 @@ export default function WebhookConfigClient({
           Your MetaTrader 5 EA should send a POST request with this JSON format:
         </p>
         <pre className="p-4 rounded-xl bg-slate-900/80 border border-slate-700/50 text-sm text-slate-300 font-mono overflow-x-auto">
-{`{
+          {`{
   "user_id": "${userId}",
   "ticket": 123456789,
   "symbol": "XAUUSD",
