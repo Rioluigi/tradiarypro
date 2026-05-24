@@ -36,7 +36,7 @@ const EA_CODE = `//+------------------------------------------------------------
 //+------------------------------------------------------------------+
 #property copyright "Tradiary"
 #property link      "https://tradiary.pro"
-#property version   "1.00"
+#property version   "1.01"
 #property description "Expert Advisor to sync closed trades with Tradiary dashboard via webhook."
 #property strict
 
@@ -93,6 +93,16 @@ string TimeToISOString(datetime time)
    MqlDateTime dt;
    TimeToStruct(time, dt);
    return StringFormat("%04d-%02d-%02dT%02d:%02d:%02dZ", dt.year, dt.mon, dt.day, dt.hour, dt.min, dt.sec);
+}
+
+//+------------------------------------------------------------------+
+//| Helper to format double to string ensuring dot decimal separator |
+//+------------------------------------------------------------------+
+string SanitizeDouble(double value, int digits)
+{
+   string s = DoubleToString(value, digits);
+   StringReplace(s, ",", ".");
+   return s;
 }
 
 //+------------------------------------------------------------------+
@@ -197,13 +207,13 @@ void OnTradeTransaction(const MqlTradeTransaction& trans,
    json += "\\\\"ticket\\\\":" + IntegerToString((long)ticket) + ",";
    json += "\\\\"symbol\\\\":\\\\"" + symbol + "\\\\",";
    json += "\\\\"type\\\\":\\\\"" + typeStr + "\\\\",";
-   json += "\\\\"volume\\\\":" + DoubleToString(volume, 2) + ",";
-   json += "\\\\"open_price\\\\":" + DoubleToString(open_price, 5) + ",";
-   json += "\\\\"close_price\\\\":" + DoubleToString(price, 5) + ",";
+   json += "\\\\"volume\\\\":" + SanitizeDouble(volume, 2) + ",";
+   json += "\\\\"open_price\\\\":" + SanitizeDouble(open_price, 5) + ",";
+   json += "\\\\"close_price\\\\":" + SanitizeDouble(price, 5) + ",";
    json += "\\\\"open_time\\\\":\\\\"" + openTimeISO + "\\\\",";
    json += "\\\\"close_time\\\\":\\\\"" + closeTimeISO + "\\\\",";
-   json += "\\\\"profit\\\\":" + DoubleToString(profit, 2) + ",";
-   json += "\\\\"commission\\\\":" + DoubleToString(commission, 2);
+   json += "\\\\"profit\\\\":" + SanitizeDouble(profit, 2) + ",";
+   json += "\\\\"commission\\\\":" + SanitizeDouble(commission, 2);
    json += "}";
    
    if(EnableLogs)
@@ -218,7 +228,14 @@ void OnTradeTransaction(const MqlTradeTransaction& trans,
    char result_data[];
    string result_headers;
    
-   StringToCharArray(json, post, 0, WHOLE_ARRAY, CP_UTF8);
+   // Copy string to char array *without* the trailing null-terminator (\\0)
+   int json_len = StringLen(json);
+   StringToCharArray(json, post, 0, json_len, CP_UTF8);
+   
+   if(EnableLogs)
+   {
+      Print("Payload length: ", json_len, " bytes, Send buffer size: ", ArraySize(post), " bytes");
+   }
    
    // Call WebRequest synchronously (blocking) with a 5-second timeout
    int response_code = WebRequest("POST", WebhookURL, headers, 5000, post, result_data, result_headers);
