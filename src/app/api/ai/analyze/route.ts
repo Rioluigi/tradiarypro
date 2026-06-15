@@ -95,7 +95,7 @@ Fokuskan pada:
 - Konsistensi ukuran lot (volume) dan saran perbaikan.`;
 
       const model = genAI.getGenerativeModel({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-2.5-flash-lite',
         generationConfig: {
           responseMimeType: 'application/json',
         },
@@ -142,7 +142,7 @@ Harap berikan respon Anda dalam format JSON terstruktur dengan kunci berikut (Pa
 Respon harus dalam Bahasa Indonesia.`;
 
       const model = genAI.getGenerativeModel({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-2.5-flash-lite',
         generationConfig: {
           responseMimeType: 'application/json',
         },
@@ -184,7 +184,7 @@ Format keluaran Anda dalam Markdown polos dengan struktur/bagian yang jelas:
 3. **Motivasi Harian**`;
 
       const model = genAI.getGenerativeModel({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-2.5-flash-lite',
       });
 
       const result = await model.generateContent(prompt);
