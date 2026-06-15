@@ -350,7 +350,7 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
         </div>
 
         {/* Messages Feed / Journal Content */}
-        {activeTab === 'chat' ? (
+        {activeTab === 'chat' && (
           <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-[#080811]/30">
             {messages.map((msg, idx) => (
               <div
@@ -385,7 +385,9 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
             
             <div ref={chatEndRef} />
           </div>
-        ) : (
+        )}
+
+        {activeTab === 'journal' && (
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#080811]/30 scrollbar-thin scrollbar-thumb-purple-900/20">
             <div className="space-y-3.5">
               <div className="space-y-1.5">
