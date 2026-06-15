@@ -252,17 +252,15 @@ body {
    are NOT affected by these overrides.
    ======================================== */
 
+body,
 .themed-app,
-.themed-app main,
-.themed-app [class*="glass"],
-.themed-app input,
-.themed-app select,
-.themed-app textarea,
-.themed-app table,
-.themed-app tr,
-.themed-app td,
-.themed-app th {
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+.themed-app *,
+.themed-app aside,
+.themed-app aside * {
+  transition: background-color 300ms ease, 
+              color 300ms ease, 
+              border-color 300ms ease, 
+              box-shadow 300ms ease;
 }
 
 .themed-app {
@@ -446,25 +444,25 @@ body {
 }
 
 /* ========================================
-   Sidebar Overrides (Force dark navy & glassmorphic look in all modes)
+   Sidebar Overrides (Force dark navy & glassmorphic look in dark mode)
    ======================================== */
-.themed-app aside.sidebar-glass,
-.themed-app aside.sidebar-glass-mobile,
-.themed-app aside.sidebar-glass *,
-.themed-app aside.sidebar-glass-mobile * {
+.dark .themed-app aside.sidebar-glass,
+.dark .themed-app aside.sidebar-glass-mobile,
+.dark .themed-app aside.sidebar-glass *,
+.dark .themed-app aside.sidebar-glass-mobile * {
   /* Restore transitions */
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  transition: background-color 300ms ease, border-color 300ms ease, color 300ms ease, box-shadow 300ms ease;
 }
 
 /* Sidebar background & border */
-.themed-app aside.sidebar-glass {
+.dark .themed-app aside.sidebar-glass {
   background-color: rgba(15, 23, 42, 0.8) !important;
   border-color: rgba(51, 65, 85, 0.5) !important;
   backdrop-filter: blur(24px) !important;
   -webkit-backdrop-filter: blur(24px) !important;
 }
 
-.themed-app aside.sidebar-glass-mobile {
+.dark .themed-app aside.sidebar-glass-mobile {
   background-color: rgba(15, 23, 42, 0.95) !important;
   border-color: rgba(51, 65, 85, 0.5) !important;
   backdrop-filter: blur(24px) !important;
@@ -472,117 +470,380 @@ body {
 }
 
 /* Sidebar inner elements border */
-.themed-app aside.sidebar-glass .border-b,
-.themed-app aside.sidebar-glass-mobile .border-b,
-.themed-app aside.sidebar-glass [class*="border-slate-"],
-.themed-app aside.sidebar-glass-mobile [class*="border-slate-"] {
+.dark .themed-app aside.sidebar-glass .border-b,
+.dark .themed-app aside.sidebar-glass-mobile .border-b,
+.dark .themed-app aside.sidebar-glass [class*="border-slate-"],
+.dark .themed-app aside.sidebar-glass-mobile [class*="border-slate-"] {
   border-color: rgba(51, 65, 85, 0.5) !important;
 }
 
 /* User Account section box */
-.themed-app aside.sidebar-glass .bg-slate-800\/50,
-.themed-app aside.sidebar-glass-mobile .bg-slate-800\/50,
-.themed-app aside.sidebar-glass [class*="bg-slate-800"],
-.themed-app aside.sidebar-glass-mobile [class*="bg-slate-800"] {
+.dark .themed-app aside.sidebar-glass .bg-slate-800\/50,
+.dark .themed-app aside.sidebar-glass-mobile .bg-slate-800\/50,
+.dark .themed-app aside.sidebar-glass [class*="bg-slate-800"],
+.dark .themed-app aside.sidebar-glass-mobile [class*="bg-slate-800"] {
   background-color: rgba(30, 41, 59, 0.5) !important;
   border-color: rgba(51, 65, 85, 0.3) !important;
 }
 
 /* Inactive nav buttons */
-.themed-app aside.sidebar-glass button:not([style*="color"]),
-.themed-app aside.sidebar-glass-mobile button:not([style*="color"]) {
+.dark .themed-app aside.sidebar-glass button:not([style*="color"]),
+.dark .themed-app aside.sidebar-glass-mobile button:not([style*="color"]) {
   color: #94a3b8 !important; /* text-slate-400 */
 }
 
-.themed-app aside.sidebar-glass button:not([style*="color"]):hover,
-.themed-app aside.sidebar-glass-mobile button:not([style*="color"]):hover {
+.dark .themed-app aside.sidebar-glass button:not([style*="color"]):hover,
+.dark .themed-app aside.sidebar-glass-mobile button:not([style*="color"]):hover {
   color: #f1f5f9 !important;
   background-color: rgba(255, 255, 255, 0.08) !important;
 }
 
 /* Active nav buttons override (inline styles use color: var(--accent)) */
-.themed-app aside.sidebar-glass button[style*="color"],
-.themed-app aside.sidebar-glass-mobile button[style*="color"] {
+.dark .themed-app aside.sidebar-glass button[style*="color"],
+.dark .themed-app aside.sidebar-glass-mobile button[style*="color"] {
   color: var(--accent) !important;
   background-color: var(--accent-dim) !important;
   border-color: var(--accent-border) !important;
 }
 
 /* Special text classes in sidebar */
-.themed-app aside.sidebar-glass .text-white,
-.themed-app aside.sidebar-glass-mobile .text-white,
-.themed-app aside.sidebar-glass [class*="text-white"],
-.themed-app aside.sidebar-glass-mobile [class*="text-white"],
-.themed-app aside.sidebar-glass [class*="text-slate-100"],
-.themed-app aside.sidebar-glass-mobile [class*="text-slate-100"],
-.themed-app aside.sidebar-glass [class*="text-slate-200"],
-.themed-app aside.sidebar-glass-mobile [class*="text-slate-200"] {
+.dark .themed-app aside.sidebar-glass .text-white,
+.dark .themed-app aside.sidebar-glass-mobile .text-white,
+.dark .themed-app aside.sidebar-glass [class*="text-white"],
+.dark .themed-app aside.sidebar-glass-mobile [class*="text-white"],
+.dark .themed-app aside.sidebar-glass [class*="text-slate-100"],
+.dark .themed-app aside.sidebar-glass-mobile [class*="text-slate-100"],
+.dark .themed-app aside.sidebar-glass [class*="text-slate-200"],
+.dark .themed-app aside.sidebar-glass-mobile [class*="text-slate-200"] {
   color: #f1f5f9 !important;
 }
 
-.themed-app aside.sidebar-glass .text-slate-300,
-.themed-app aside.sidebar-glass-mobile .text-slate-300,
-.themed-app aside.sidebar-glass [class*="text-slate-300"],
-.themed-app aside.sidebar-glass-mobile [class*="text-slate-300"] {
+.dark .themed-app aside.sidebar-glass .text-slate-300,
+.dark .themed-app aside.sidebar-glass-mobile .text-slate-300,
+.dark .themed-app aside.sidebar-glass [class*="text-slate-300"],
+.dark .themed-app aside.sidebar-glass-mobile [class*="text-slate-300"] {
   color: #cbd5e1 !important;
 }
 
-.themed-app aside.sidebar-glass .text-slate-400,
-.themed-app aside.sidebar-glass-mobile .text-slate-400,
-.themed-app aside.sidebar-glass [class*="text-slate-400"],
-.themed-app aside.sidebar-glass-mobile [class*="text-slate-400"] {
+.dark .themed-app aside.sidebar-glass .text-slate-400,
+.dark .themed-app aside.sidebar-glass-mobile .text-slate-400,
+.dark .themed-app aside.sidebar-glass [class*="text-slate-400"],
+.dark .themed-app aside.sidebar-glass-mobile [class*="text-slate-400"] {
   color: #94a3b8 !important;
 }
 
-.themed-app aside.sidebar-glass .text-slate-500,
-.themed-app aside.sidebar-glass-mobile .text-slate-500,
-.themed-app aside.sidebar-glass [class*="text-slate-500"],
-.themed-app aside.sidebar-glass-mobile [class*="text-slate-500"] {
+.dark .themed-app aside.sidebar-glass .text-slate-500,
+.dark .themed-app aside.sidebar-glass-mobile .text-slate-500,
+.dark .themed-app aside.sidebar-glass [class*="text-slate-500"],
+.dark .themed-app aside.sidebar-glass-mobile [class*="text-slate-500"] {
   color: #64748b !important;
 }
 
 /* Sign out button hover state */
-.themed-app aside.sidebar-glass button.hover\:text-red-400:hover,
-.themed-app aside.sidebar-glass-mobile button.hover\:text-red-400:hover {
+.dark .themed-app aside.sidebar-glass button.hover\:text-red-400:hover,
+.dark .themed-app aside.sidebar-glass-mobile button.hover\:text-red-400:hover {
   color: #f87171 !important;
   background-color: rgba(239, 68, 68, 0.1) !important;
 }
 
 /* Free Plan Box & Upgrade Buttons */
-.themed-app aside.sidebar-glass [class*="border-indigo-"],
-.themed-app aside.sidebar-glass-mobile [class*="border-indigo-"] {
+.dark .themed-app aside.sidebar-glass [class*="border-indigo-"],
+.dark .themed-app aside.sidebar-glass-mobile [class*="border-indigo-"] {
   border-color: rgba(99, 102, 241, 0.4) !important;
 }
 
-.themed-app aside.sidebar-glass [class*="bg-indigo-"],
-.themed-app aside.sidebar-glass-mobile [class*="bg-indigo-"] {
+.dark .themed-app aside.sidebar-glass [class*="bg-indigo-"],
+.dark .themed-app aside.sidebar-glass-mobile [class*="bg-indigo-"] {
   background-color: rgba(99, 102, 241, 0.05) !important;
 }
 
-.themed-app aside.sidebar-glass [class*="text-indigo-"],
-.themed-app aside.sidebar-glass-mobile [class*="text-indigo-"] {
+.dark .themed-app aside.sidebar-glass [class*="text-indigo-"],
+.dark .themed-app aside.sidebar-glass-mobile [class*="text-indigo-"] {
   color: #818cf8 !important;
 }
 
-.themed-app aside.sidebar-glass button.bg-indigo-600,
-.themed-app aside.sidebar-glass-mobile button.bg-indigo-600 {
+.dark .themed-app aside.sidebar-glass button.bg-indigo-600,
+.dark .themed-app aside.sidebar-glass-mobile button.bg-indigo-600 {
   background-color: #4f46e5 !important;
   color: #ffffff !important;
 }
 
-.themed-app aside.sidebar-glass button.bg-indigo-600:hover,
-.themed-app aside.sidebar-glass-mobile button.bg-indigo-600:hover {
+.dark .themed-app aside.sidebar-glass button.bg-indigo-600:hover,
+.dark .themed-app aside.sidebar-glass-mobile button.bg-indigo-600:hover {
   background-color: #4338ca !important;
 }
 
 /* Mobile menu button toggle */
-.themed-app button.mobile-sidebar-toggle {
+.dark .themed-app button.mobile-sidebar-toggle {
   background-color: rgba(15, 23, 42, 0.9) !important;
   border-color: rgba(51, 65, 85, 0.5) !important;
   color: #94a3b8 !important;
 }
 
-.themed-app button.mobile-sidebar-toggle:hover {
+.dark .themed-app button.mobile-sidebar-toggle:hover {
   color: #ffffff !important;
   background-color: rgba(15, 23, 42, 1) !important;
 }
+
+/* ========================================
+   Light Mode General Styles & Variable Overrides
+   ======================================== */
+.light .themed-app {
+  --bg-primary: #f8f9fa !important;
+  --bg-card: #ffffff !important;
+  --border: #e5e7eb !important;
+  --border-subtle: rgba(229, 231, 235, 0.5) !important;
+  --text-primary: #111827 !important;
+  --text-secondary: #6b7280 !important;
+  --text-muted: #9ca3af !important;
+  
+  --accent: #7c3aed !important;
+  --accent-dim: rgba(124, 58, 237, 0.08) !important;
+  --accent-border: rgba(124, 58, 237, 0.2) !important;
+  --accent-glow: rgba(124, 58, 237, 0.04) !important;
+
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Light mode support for pre and code blocks */
+.light .themed-app pre,
+.light .themed-app code {
+  background-color: #f3f4f6 !important;
+  color: #1f2937 !important;
+  border-color: #e5e7eb !important;
+}
+
+/* Form fields input scheme override for light mode */
+.light .themed-app input,
+.light .themed-app select,
+.light .themed-app textarea {
+  color-scheme: light !important;
+}
+
+/* Keep text white on purple or indigo backgrounds in all modes */
+.themed-app [class*="bg-purple-600"],
+.themed-app [class*="bg-indigo-600"],
+.themed-app button.bg-indigo-600,
+.themed-app button.bg-purple-600 {
+  color: #ffffff !important;
+}
+.themed-app [class*="bg-purple-600"] *,
+.themed-app [class*="bg-indigo-600"] * {
+  color: #ffffff !important;
+}
+
+/* Light mode table row styling */
+.light .themed-app thead tr,
+.light .themed-app thead th {
+  background-color: #f3f4f6 !important;
+  color: #374151 !important;
+}
+
+.light .themed-app tbody tr:hover,
+.light .themed-app tbody tr.hover\:bg-slate-700\/20:hover {
+  background-color: #f9fafb !important;
+  opacity: 1 !important;
+}
+
+/* Alternating rows override for table lists in light mode */
+.light .themed-app tbody tr[class*="bg-slate-800/30"] {
+  background-color: #f9fafb !important;
+}
+
+/* Table divides */
+.themed-app [class*="divide-slate-"],
+.themed-app [class*="divide-slate-"] > * {
+  border-color: var(--border) !important;
+}
+
+/* Light Mode Profit & Loss colors */
+.light .themed-app .text-emerald-400,
+.light .themed-app .text-profit {
+  color: #16a34a !important;
+}
+
+.light .themed-app .text-red-400,
+.light .themed-app .text-loss {
+  color: #dc2626 !important;
+}
+
+.light .themed-app .bg-emerald-500\/10,
+.light .themed-app .bg-profit {
+  background-color: rgba(22, 163, 74, 0.1) !important;
+  color: #16a34a !important;
+}
+
+.light .themed-app .bg-red-500\/10,
+.light .themed-app .bg-loss {
+  background-color: rgba(220, 38, 38, 0.1) !important;
+  color: #dc2626 !important;
+}
+
+.light .themed-app [class*="bg-emerald-500"][class*="5"] {
+  background-color: rgba(22, 163, 74, 0.08) !important;
+}
+
+.light .themed-app [class*="bg-red-500"][class*="5"] {
+  background-color: rgba(220, 38, 38, 0.08) !important;
+}
+
+/* ========================================
+   Sidebar Overrides (Light Mode)
+   ======================================== */
+.light .themed-app aside,
+.light .themed-app aside * {
+  transition: background-color 300ms ease, border-color 300ms ease, color 300ms ease, box-shadow 300ms ease;
+}
+
+.light .themed-app aside {
+  background-color: #ffffff !important;
+  border-color: #e5e7eb !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Inactive nav buttons */
+.light .themed-app aside button:not([style*="color"]),
+.light .themed-app aside a:not([style*="color"]) {
+  color: #374151 !important;
+}
+
+.light .themed-app aside button:not([style*="color"]):hover,
+.light .themed-app aside a:not([style*="color"]):hover {
+  color: #111827 !important;
+  background-color: #f3f4f6 !important;
+}
+
+/* Active buttons styling in sidebar */
+.light .themed-app aside button[style*="color"],
+.light .themed-app aside a[style*="color"] {
+  color: var(--accent) !important;
+  background-color: var(--accent-dim) !important;
+  border-color: var(--accent-border) !important;
+}
+
+/* Sidebar Headings & Logos */
+.light .themed-app aside h1 {
+  background: none !important;
+  background-clip: unset !important;
+  -webkit-background-clip: unset !important;
+  color: #111827 !important;
+}
+
+.light .themed-app aside [class*="text-slate-500"] {
+  color: #6b7280 !important;
+}
+
+.light .themed-app aside [class*="text-white"],
+.light .themed-app aside [class*="text-slate-100"],
+.light .themed-app aside [class*="text-slate-200"],
+.light .themed-app aside [class*="text-slate-300"] {
+  color: #111827 !important;
+}
+
+.light .themed-app aside [class*="text-slate-400"] {
+  color: #374151 !important;
+}
+
+.light .themed-app aside [class*="text-purple-400"] {
+  color: #7c3aed !important;
+}
+
+.light .themed-app aside [class*="text-indigo-400"] {
+  color: #6366f1 !important;
+}
+
+.light .themed-app aside [class*="border-indigo-"] {
+  border-color: #ddd6fe !important;
+}
+
+.light .themed-app aside [class*="bg-indigo-50"] {
+  background-color: #f5f3ff !important;
+}
+
+.light .themed-app aside button.bg-indigo-600 {
+  background-color: #7c3aed !important;
+  color: #ffffff !important;
+}
+
+.light .themed-app aside button.bg-indigo-600:hover {
+  background-color: #6d28d9 !important;
+}
+
+.light .themed-app aside [class*="border-slate-700"],
+.light .themed-app aside .border-b,
+.light .themed-app aside .border-r,
+.light .themed-app aside .border-t {
+  border-color: #e5e7eb !important;
+}
+
+.light .themed-app aside [class*="bg-slate-800"] {
+  background-color: #f3f4f6 !important;
+  border-color: #e5e7eb !important;
+}
+
+.light .themed-app aside [class*="text-slate-300"] {
+  color: #374151 !important;
+}
+
+/* Collapse button */
+.light .themed-app aside button.absolute {
+  background-color: #ffffff !important;
+  border-color: #e5e7eb !important;
+  color: #4b5563 !important;
+}
+
+.light .themed-app aside button.absolute:hover {
+  background-color: #f3f4f6 !important;
+  color: #111827 !important;
+}
+
+/* Sign out button hover */
+.light .themed-app aside button.hover\:text-red-400:hover,
+.light .themed-app aside button[class*="hover:text-red-"]:hover {
+  color: #dc2626 !important;
+  background-color: rgba(220, 38, 38, 0.08) !important;
+}
+
+/* Mobile bottom nav and sidebar toggle in light mode */
+.light .themed-app div.lg\:hidden.fixed.bottom-0 {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-color: #e5e7eb !important;
+}
+
+.light .themed-app div.lg\:hidden.fixed.bottom-0 a:not([style*="color"]) {
+  color: #374151 !important;
+}
+
+.light .themed-app div.lg\:hidden.fixed.bottom-0 a:not([style*="color"]):hover {
+  color: #111827 !important;
+}
+
+.light .themed-app button.mobile-sidebar-toggle,
+.light .themed-app button.lg\:hidden {
+  background-color: #ffffff !important;
+  border-color: #e5e7eb !important;
+  color: #374151 !important;
+}
+
+.light .themed-app button.mobile-sidebar-toggle:hover,
+.light .themed-app button.lg\:hidden:hover {
+  background-color: #f3f4f6 !important;
+  color: #111827 !important;
+}
+
+/* AI Chat popup in light mode */
+.light .themed-app .bg-\[\#0d0d1a\]\/95 {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(124, 58, 237, 0.2) !important;
+}
+
+.light .themed-app .bg-\[\#0d0d1a\]\/80 {
+  background-color: rgba(249, 250, 251, 0.8) !important;
+  border-color: rgba(124, 58, 237, 0.1) !important;
+}
+
+.light .themed-app .bg-\[\#080811\]\/30 {
+  background-color: #f9fafb !important;
+}

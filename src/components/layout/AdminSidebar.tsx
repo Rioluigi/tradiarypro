@@ -17,6 +17,7 @@ import {
   X,
   Sun,
   Moon,
+  Loader2,
 } from 'lucide-react';
 import { useCurrency } from '@/components/providers/AppProvider';
 
@@ -67,7 +68,6 @@ export default function AdminSidebar({ userEmail }: AdminSidebarProps) {
       const supabase = createClient();
       await supabase.auth.signOut();
       router.push('/login');
-      router.refresh();
     } catch {
       setIsSigningOut(false);
     }
@@ -206,7 +206,11 @@ export default function AdminSidebar({ userEmail }: AdminSidebarProps) {
           )}
           title={collapsed ? 'Sign Out' : undefined}
         >
-          <LogOut size={20} />
+          {isSigningOut ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            <LogOut size={20} />
+          )}
           {!collapsed && (
             <span>{isSigningOut ? 'Signing out...' : 'Sign Out'}</span>
           )}

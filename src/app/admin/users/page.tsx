@@ -70,40 +70,45 @@ export default function ManageUsers() {
 
   // Load user data and trade counts
   const loadData = useCallback(async () => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, 15000); // 15 seconds timeout fallback
+
     try {
       setLoading(true);
       setError(null);
 
       // Get logged in user ID for safety check
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: authErr } = await supabase.auth.getUser();
+      if (authErr) throw authErr;
       if (user) {
         setCurrentUserId(user.id);
       }
 
-      // Fetch all user profiles
-      const { data: profilesData, error: profilesErr } = await supabase
-        .from('profiles')
-        .select('id, email, role, is_active, created_at, subscription_plan')
-        .order('created_at', { ascending: false });
+      const res = await fetch('/api/admin/users', {
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
 
-      if (profilesErr) throw profilesErr;
-      setProfiles(profilesData || []);
-
-      // Fetch trades counts
-      const { data: tradesData, error: tradesErr } = await supabase
-        .from('trades')
-        .select('user_id');
-
-      if (!tradesErr && tradesData) {
-        const counts: { [userId: string]: number } = {};
-        tradesData.forEach((t) => {
-          counts[t.user_id] = (counts[t.user_id] || 0) + 1;
-        });
-        setTradeCounts(counts);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `HTTP error! Status: ${res.status}`);
       }
+
+      const data = await res.json();
+      setProfiles(data.profiles || []);
+      setTradeCounts(data.tradeCounts || {});
     } catch (err: unknown) {
       console.error('Error fetching users:', err);
-      const errMsg = err instanceof Error ? err.message : 'Failed to load user management data';
+      let errMsg = 'Failed to load user management data';
+      if (err instanceof Error) {
+        if (err.name === 'AbortError') {
+          errMsg = 'Request timed out after 15 seconds. Please refresh the page.';
+        } else {
+          errMsg = err.message;
+        }
+      }
       setError(errMsg);
     } finally {
       setLoading(false);

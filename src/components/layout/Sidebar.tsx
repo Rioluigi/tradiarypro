@@ -21,6 +21,7 @@ import {
   Moon,
   Shield,
   Sparkles,
+  Loader2,
 } from 'lucide-react';
 import { useCurrency } from '@/components/providers/AppProvider';
 
@@ -84,7 +85,6 @@ export default function Sidebar({ userEmail, subscriptionPlan = 'free' }: Sideba
       const supabase = createClient();
       await supabase.auth.signOut();
       router.push('/login');
-      router.refresh();
     } catch {
       setIsSigningOut(false);
     }
@@ -274,7 +274,11 @@ export default function Sidebar({ userEmail, subscriptionPlan = 'free' }: Sideba
           )}
           title={collapsed ? 'Sign Out' : undefined}
         >
-          <LogOut size={20} />
+          {isSigningOut ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            <LogOut size={20} />
+          )}
           {!collapsed && (
             <span>{isSigningOut ? 'Signing out...' : 'Sign Out'}</span>
           )}

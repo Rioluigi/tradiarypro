@@ -80,7 +80,7 @@ export default function LandingClient({ cmsContent }: LandingClientProps) {
   let statsTrades = '1.4M+';
   let statsSatisfaction = '98%';
   let footerCopyright = '© 2026 Tradiary. All rights reserved.';
-  
+
   let planFreeVisible = true;
   let planProVisible = true;
   let planEnterpriseVisible = true;
@@ -95,7 +95,7 @@ export default function LandingClient({ cmsContent }: LandingClientProps) {
       if (key === 'stats_trades') statsTrades = val;
       if (key === 'stats_satisfaction') statsSatisfaction = val;
       if (key === 'footer_copyright') footerCopyright = val;
-      
+
       if (key === 'plan_free_visible') planFreeVisible = val === 'true';
       if (key === 'plan_pro_visible') planProVisible = val === 'true';
       if (key === 'plan_enterprise_visible') planEnterpriseVisible = val === 'true';
@@ -130,14 +130,13 @@ export default function LandingClient({ cmsContent }: LandingClientProps) {
         .delay-400 { transition-delay: 400ms; }
         .delay-500 { transition-delay: 500ms; }
       `}</style>
-      
+
       {/* ─── NAVBAR ─── */}
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
             ? 'bg-white/80 backdrop-blur-md border-b border-slate-100 shadow-sm py-4'
             : 'bg-transparent py-6'
-        }`}
+          }`}
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           {/* Logo */}
@@ -351,7 +350,7 @@ export default function LandingClient({ cmsContent }: LandingClientProps) {
                         Live Sync
                       </span>
                     </div>
-                    
+
                     {/* Simulated SVG Graph */}
                     <div className="flex-1 w-full relative">
                       <svg viewBox="0 0 400 120" className="w-full h-full text-indigo-500 overflow-visible" preserveAspectRatio="none">
@@ -365,7 +364,7 @@ export default function LandingClient({ cmsContent }: LandingClientProps) {
                         <line x1="0" y1="20" x2="400" y2="20" stroke="#f1f5f9" strokeWidth="1" />
                         <line x1="0" y1="60" x2="400" y2="60" stroke="#f1f5f9" strokeWidth="1" />
                         <line x1="0" y1="100" x2="400" y2="100" stroke="#f1f5f9" strokeWidth="1" />
-                        
+
                         {/* Area */}
                         <path
                           d="M0,110 L20,95 L40,102 L60,85 L80,90 L100,70 L120,78 L140,55 L160,63 L180,48 L200,52 L220,35 L240,40 L260,25 L280,30 L300,18 L320,24 L340,12 L360,16 L380,5 L400,2 L400,120 L0,120 Z"
@@ -551,21 +550,19 @@ export default function LandingClient({ cmsContent }: LandingClientProps) {
           <div className="flex items-center justify-center gap-3.5 mb-14 scroll-reveal delay-75">
             <button
               onClick={() => setBillingCycle('monthly')}
-              className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                billingCycle === 'monthly'
+              className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${billingCycle === 'monthly'
                   ? 'bg-slate-900 text-white shadow-md'
                   : 'bg-slate-50 text-slate-500 hover:text-slate-800'
-              }`}
+                }`}
             >
               Monthly
             </button>
             <button
               onClick={() => setBillingCycle('yearly')}
-              className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${
-                billingCycle === 'yearly'
+              className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${billingCycle === 'yearly'
                   ? 'bg-slate-900 text-white shadow-md'
                   : 'bg-slate-50 text-slate-500 hover:text-slate-800'
-              }`}
+                }`}
             >
               Yearly
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-indigo-500 text-white">
@@ -578,136 +575,136 @@ export default function LandingClient({ cmsContent }: LandingClientProps) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto items-stretch scroll-reveal delay-150">
             {/* Free Plan */}
             {planFreeVisible && (
-            <div className="bg-white rounded-2xl border border-slate-200/80 p-8 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300">
-              <div>
-                <h4 className="text-base font-bold text-slate-900 mb-2">Free</h4>
-                <p className="text-xs text-slate-400 mb-6">Ideal to start journaling your edge</p>
-                <p className="text-4xl font-extrabold text-slate-900 tracking-tight mb-6">
-                  $0
-                  <span className="text-sm text-slate-400 font-normal">
-                    /{billingCycle === 'monthly' ? 'mo' : 'yr'}
-                  </span>
-                </p>
-                <hr className="border-slate-100 mb-6" />
-                <ul className="space-y-4 mb-8">
-                  <li className="flex items-start gap-3 text-xs text-slate-600">
-                    <Check size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
-                    <span>1 Trading Account</span>
-                  </li>
-                  <li className="flex items-start gap-3 text-xs text-slate-600">
-                    <Check size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
-                    <span>Basic Analytics & Stats</span>
-                  </li>
-                  <li className="flex items-start gap-3 text-xs text-slate-600">
-                    <Check size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
-                    <span>Manual Trade History Log</span>
-                  </li>
-                  <li className="flex items-start gap-3 text-xs text-slate-600">
-                    <Check size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
-                    <span>Standard Email Support</span>
-                  </li>
-                </ul>
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-8 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300">
+                <div>
+                  <h4 className="text-base font-bold text-slate-900 mb-2">Free</h4>
+                  <p className="text-xs text-slate-400 mb-6">Ideal to start journaling your edge</p>
+                  <p className="text-4xl font-extrabold text-slate-900 tracking-tight mb-6">
+                    $0
+                    <span className="text-sm text-slate-400 font-normal">
+                      /{billingCycle === 'monthly' ? 'mo' : 'yr'}
+                    </span>
+                  </p>
+                  <hr className="border-slate-100 mb-6" />
+                  <ul className="space-y-4 mb-8">
+                    <li className="flex items-start gap-3 text-xs text-slate-600">
+                      <Check size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
+                      <span>1 Trading Account</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-xs text-slate-600">
+                      <Check size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
+                      <span>Basic Analytics & Stats</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-xs text-slate-600">
+                      <Check size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
+                      <span>Manual Trade History Log</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-xs text-slate-600">
+                      <Check size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
+                      <span>Standard Email Support</span>
+                    </li>
+                  </ul>
+                </div>
+                <Link
+                  href="/register"
+                  className="w-full text-center py-3.5 rounded-xl text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-150 transition-colors"
+                >
+                  Get Started Free
+                </Link>
               </div>
-              <Link
-                href="/register"
-                className="w-full text-center py-3.5 rounded-xl text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-150 transition-colors"
-              >
-                Get Started Free
-              </Link>
-            </div>
             )}
 
             {/* Pro Plan */}
             {planProVisible && (
-            <div className="bg-white rounded-2xl border-2 border-indigo-600 p-8 shadow-xl relative flex flex-col justify-between hover:scale-[1.01] transition-all duration-300">
-              <div className="absolute top-0 right-8 -translate-y-1/2 bg-indigo-600 text-white text-[10px] font-bold uppercase tracking-wider px-3.5 py-1 rounded-full shadow-lg shadow-indigo-600/20">
-                Popular
+              <div className="bg-white rounded-2xl border-2 border-indigo-600 p-8 shadow-xl relative flex flex-col justify-between hover:scale-[1.01] transition-all duration-300">
+                <div className="absolute top-0 right-8 -translate-y-1/2 bg-indigo-600 text-white text-[10px] font-bold uppercase tracking-wider px-3.5 py-1 rounded-full shadow-lg shadow-indigo-600/20">
+                  Popular
+                </div>
+                <div>
+                  <h4 className="text-base font-bold text-slate-900 mb-2">Pro</h4>
+                  <p className="text-xs text-slate-400 mb-6">Designed for professional traders</p>
+                  <p className="text-4xl font-extrabold text-slate-900 tracking-tight mb-6">
+                    ${billingCycle === 'monthly' ? pricing.pro.monthly : pricing.pro.yearly}
+                    <span className="text-sm text-slate-400 font-normal">
+                      /{billingCycle === 'monthly' ? 'mo' : 'yr'}
+                    </span>
+                  </p>
+                  <hr className="border-slate-100 mb-6" />
+                  <ul className="space-y-4 mb-8">
+                    <li className="flex items-start gap-3 text-xs text-slate-600">
+                      <Check size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
+                      <span className="font-semibold text-slate-800">5 Trading Accounts</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-xs text-slate-600">
+                      <Check size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
+                      <span>Advanced Statistics & KPI Cards</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-xs text-slate-600">
+                      <Check size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
+                      <span>Equity Curve & Calendar View</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-xs text-slate-600">
+                      <Check size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
+                      <span>MT5 Webhook Integration</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-xs text-slate-600">
+                      <Check size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
+                      <span>Priority Support Response</span>
+                    </li>
+                  </ul>
+                </div>
+                <Link
+                  href="/register?plan=pro"
+                  className="w-full text-center py-3.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-600/10 hover:shadow-indigo-600/20 transition-all"
+                >
+                  Start Free Trial
+                </Link>
               </div>
-              <div>
-                <h4 className="text-base font-bold text-slate-900 mb-2">Pro</h4>
-                <p className="text-xs text-slate-400 mb-6">Designed for professional traders</p>
-                <p className="text-4xl font-extrabold text-slate-900 tracking-tight mb-6">
-                  ${billingCycle === 'monthly' ? pricing.pro.monthly : pricing.pro.yearly}
-                  <span className="text-sm text-slate-400 font-normal">
-                    /{billingCycle === 'monthly' ? 'mo' : 'yr'}
-                  </span>
-                </p>
-                <hr className="border-slate-100 mb-6" />
-                <ul className="space-y-4 mb-8">
-                  <li className="flex items-start gap-3 text-xs text-slate-600">
-                    <Check size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
-                    <span className="font-semibold text-slate-800">5 Trading Accounts</span>
-                  </li>
-                  <li className="flex items-start gap-3 text-xs text-slate-600">
-                    <Check size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
-                    <span>Advanced Statistics & KPI Cards</span>
-                  </li>
-                  <li className="flex items-start gap-3 text-xs text-slate-600">
-                    <Check size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
-                    <span>Equity Curve & Calendar View</span>
-                  </li>
-                  <li className="flex items-start gap-3 text-xs text-slate-600">
-                    <Check size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
-                    <span>MT5 Webhook Integration</span>
-                  </li>
-                  <li className="flex items-start gap-3 text-xs text-slate-600">
-                    <Check size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
-                    <span>Priority Support Response</span>
-                  </li>
-                </ul>
-              </div>
-              <Link
-                href="/register?plan=pro"
-                className="w-full text-center py-3.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-600/10 hover:shadow-indigo-600/20 transition-all"
-              >
-                Start Free Trial
-              </Link>
-            </div>
             )}
 
             {/* Enterprise Plan */}
             {planEnterpriseVisible && (
-            <div className="bg-white rounded-2xl border border-slate-200/80 p-8 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300">
-              <div>
-                <h4 className="text-base font-bold text-slate-900 mb-2">Enterprise</h4>
-                <p className="text-xs text-slate-400 mb-6">For proprietary funds and teams</p>
-                <p className="text-4xl font-extrabold text-slate-900 tracking-tight mb-6">
-                  ${billingCycle === 'monthly' ? pricing.enterprise.monthly : pricing.enterprise.yearly}
-                  <span className="text-sm text-slate-400 font-normal">
-                    /{billingCycle === 'monthly' ? 'mo' : 'yr'}
-                  </span>
-                </p>
-                <hr className="border-slate-100 mb-6" />
-                <ul className="space-y-4 mb-8">
-                  <li className="flex items-start gap-3 text-xs text-slate-600">
-                    <Check size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
-                    <span className="font-semibold text-slate-800">Unlimited Accounts</span>
-                  </li>
-                  <li className="flex items-start gap-3 text-xs text-slate-600">
-                    <Check size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
-                    <span>Custom Reports & Whitelabelling</span>
-                  </li>
-                  <li className="flex items-start gap-3 text-xs text-slate-600">
-                    <Check size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
-                    <span>Full REST API Access</span>
-                  </li>
-                  <li className="flex items-start gap-3 text-xs text-slate-600">
-                    <Check size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
-                    <span>Dedicated Account Manager</span>
-                  </li>
-                  <li className="flex items-start gap-3 text-xs text-slate-600">
-                    <Check size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
-                    <span>Team Management Controls</span>
-                  </li>
-                </ul>
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-8 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300">
+                <div>
+                  <h4 className="text-base font-bold text-slate-900 mb-2">Enterprise</h4>
+                  <p className="text-xs text-slate-400 mb-6">For proprietary funds and teams</p>
+                  <p className="text-4xl font-extrabold text-slate-900 tracking-tight mb-6">
+                    ${billingCycle === 'monthly' ? pricing.enterprise.monthly : pricing.enterprise.yearly}
+                    <span className="text-sm text-slate-400 font-normal">
+                      /{billingCycle === 'monthly' ? 'mo' : 'yr'}
+                    </span>
+                  </p>
+                  <hr className="border-slate-100 mb-6" />
+                  <ul className="space-y-4 mb-8">
+                    <li className="flex items-start gap-3 text-xs text-slate-600">
+                      <Check size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
+                      <span className="font-semibold text-slate-800">Unlimited Accounts</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-xs text-slate-600">
+                      <Check size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
+                      <span>Custom Reports & Whitelabelling</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-xs text-slate-600">
+                      <Check size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
+                      <span>Full REST API Access</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-xs text-slate-600">
+                      <Check size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
+                      <span>Dedicated Account Manager</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-xs text-slate-600">
+                      <Check size={16} className="text-indigo-500 flex-shrink-0 mt-0.5" />
+                      <span>Team Management Controls</span>
+                    </li>
+                  </ul>
+                </div>
+                <Link
+                  href="/register?plan=enterprise"
+                  className="w-full text-center py-3.5 rounded-xl text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-155 transition-colors"
+                >
+                  Contact Us
+                </Link>
               </div>
-              <Link
-                href="/register?plan=enterprise"
-                className="w-full text-center py-3.5 rounded-xl text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-155 transition-colors"
-              >
-                Contact Us
-              </Link>
-            </div>
             )}
           </div>
 
@@ -744,7 +741,7 @@ export default function LandingClient({ cmsContent }: LandingClientProps) {
                 </div>
                 <div>
                   <p className="text-xs font-bold text-slate-800">Rio Luigi</p>
-                  <p className="text-[10px] text-slate-400">@traderrio</p>
+                  <p className="text-[10px] text-slate-400">@TradeRLD.FX</p>
                 </div>
               </div>
             </div>
@@ -756,11 +753,11 @@ export default function LandingClient({ cmsContent }: LandingClientProps) {
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center font-bold text-white text-xs">
-                  FP
+                  RF
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-800">Adi Nugroho</p>
-                  <p className="text-[10px] text-slate-400">@forexpro_id</p>
+                  <p className="text-xs font-bold text-slate-800">Rega Aditiya</p>
+                  <p className="text-[10px] text-slate-400">@rega.fx</p>
                 </div>
               </div>
             </div>
@@ -775,7 +772,7 @@ export default function LandingClient({ cmsContent }: LandingClientProps) {
                   SC
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-800">Alex Carter</p>
+                  <p className="text-xs font-bold text-slate-800">Reza Alfariji</p>
                   <p className="text-[10px] text-slate-400">@scalper99</p>
                 </div>
               </div>

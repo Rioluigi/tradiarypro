@@ -8,6 +8,78 @@ const supabaseAdmin = createSupabaseClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+export async function GET(request: NextRequest) {
+  try {
+    // 1. Authenticate caller and check if they are an admin
+    const cookiesStore = request.cookies;
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookiesStore.getAll();
+          },
+          setAll() {
+            // Read-only
+          },
+        },
+      }
+    );
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      console.error('[Admin Users API GET] Authentication failed:', authError);
+      return NextResponse.json({ error: 'Unauthorized: Authentication required' }, { status: 401 });
+    }
+
+    // Check caller's role in profiles
+    const { data: callerProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError || !callerProfile || callerProfile.role !== 'admin') {
+      console.error('[Admin Users API GET] Access denied: User is not an admin', profileError);
+      return NextResponse.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    }
+
+    // 2. Fetch all user profiles using admin client
+    const { data: profiles, error: profilesErr } = await supabaseAdmin
+      .from('profiles')
+      .select('id, email, role, is_active, created_at, subscription_plan')
+      .order('created_at', { ascending: false });
+
+    if (profilesErr) throw profilesErr;
+
+    // 3. Fetch trade counts using admin client
+    const { data: trades, error: tradesErr } = await supabaseAdmin
+      .from('trades')
+      .select('user_id');
+
+    const tradeCounts: { [userId: string]: number } = {};
+    if (!tradesErr && trades) {
+      trades.forEach((t) => {
+        tradeCounts[t.user_id] = (tradeCounts[t.user_id] || 0) + 1;
+      });
+    }
+
+    return NextResponse.json({
+      profiles: profiles || [],
+      tradeCounts,
+    });
+  } catch (error) {
+    console.error('[Admin Users API GET] Uncaught Exception:', error);
+    const msg = error instanceof Error ? error.message : 'Internal Server Error';
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     // 1. Authenticate caller and check if they are an admin

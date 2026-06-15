@@ -2,7 +2,6 @@
 
 import { Suspense, useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
 import { useCurrency } from '@/components/providers/AppProvider';
 import {
   Search,
@@ -54,7 +53,6 @@ function MonitorTradesContent() {
   const itemsPerPage = 20;
 
   const { formatCurrency } = useCurrency();
-  const supabase = createClient();
   const searchParams = useSearchParams();
 
   // Read email from search query params on mount
@@ -67,29 +65,38 @@ function MonitorTradesContent() {
 
   useEffect(() => {
     async function loadData() {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+      }, 15000); // 15 seconds timeout fallback
+
       try {
         setLoading(true);
         setError(null);
 
-        // 1. Fetch user profiles to map user_id -> email
-        const { data: profilesData, error: profilesErr } = await supabase
-          .from('profiles')
-          .select('id, email');
+        const res = await fetch('/api/admin/trades', {
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
 
-        if (profilesErr) throw profilesErr;
-        setProfiles(profilesData || []);
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || `HTTP error! Status: ${res.status}`);
+        }
 
-        // 2. Fetch all trades
-        const { data: tradesData, error: tradesErr } = await supabase
-          .from('trades')
-          .select('*')
-          .order('open_time', { ascending: false });
-
-        if (tradesErr) throw tradesErr;
-        setTrades(tradesData || []);
+        const data = await res.json();
+        setProfiles(data.profiles || []);
+        setTrades(data.trades || []);
       } catch (err: unknown) {
         console.error('Error fetching admin trades:', err);
-        const errMsg = err instanceof Error ? err.message : 'Failed to load transaction monitor';
+        let errMsg = 'Failed to load transaction monitor';
+        if (err instanceof Error) {
+          if (err.name === 'AbortError') {
+            errMsg = 'Request timed out after 15 seconds. Please refresh the page.';
+          } else {
+            errMsg = err.message;
+          }
+        }
         setError(errMsg);
       } finally {
         setLoading(false);
@@ -97,7 +104,7 @@ function MonitorTradesContent() {
     }
 
     loadData();
-  }, [supabase]);
+  }, []);
 
   // Profile Map for fast email lookups
   const userMap = useMemo(() => {
