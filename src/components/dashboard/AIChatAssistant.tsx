@@ -185,20 +185,40 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
   };
 
   const fetchTrades = async () => {
-    if (!userId) return;
     setLoadingTrades(true);
+    setInsightError(null);
     try {
       const supabase = createClient();
+      
+      // Get current session to ensure user session is active
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) {
+        throw new Error(`Gagal memverifikasi sesi: ${sessionError.message}`);
+      }
+      if (!session) {
+        throw new Error('Sesi pengguna tidak aktif. Silakan login kembali.');
+      }
+
+      const activeUserId = session.user.id || userId;
+      if (!activeUserId) {
+        throw new Error('User ID tidak ditemukan.');
+      }
+
       const { data, error } = await supabase
         .from('trades')
         .select('*')
-        .eq('user_id', userId)
+        .eq('user_id', activeUserId)
         .order('close_time', { ascending: false });
-      if (!error && data) {
-        setTrades(data as Trade[]);
+
+      if (error) {
+        throw new Error(error.message);
       }
-    } catch (err) {
+
+      setTrades((data as Trade[]) || []);
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : 'Terjadi kesalahan saat memuat data trade.';
       console.error('Error fetching trades for insights:', err);
+      setInsightError(errMsg);
     } finally {
       setLoadingTrades(false);
     }
@@ -555,7 +575,7 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
 
               {!loadingTrades && trades.length === 0 && (
                 <div className="text-center py-10 px-4 rounded-xl border border-slate-800 bg-slate-900/20">
-                  <p className="text-xs text-slate-400 font-semibold">Belum ada transaksi</p>
+                  <p className="text-xs text-slate-400 font-semibold">Belum ada data trades untuk dianalisis</p>
                   <p className="text-[10px] text-slate-500 mt-1">
                     Hubungkan MT4/MT5 atau catat transaksi Anda terlebih dahulu.
                   </p>
