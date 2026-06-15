@@ -63,8 +63,8 @@ export async function POST(request: NextRequest) {
     // 1. TRADE INSIGHTS
     // ────────────────────────────────────────────────────────────────
     if (type === 'insight') {
-      if (!trades || !Array.isArray(trades)) {
-        return NextResponse.json({ error: 'Missing trades array' }, { status: 400 });
+      if (!trades || !Array.isArray(trades) || trades.length === 0) {
+        return NextResponse.json({ error: 'Anda harus memiliki minimal 1 transaksi untuk dianalisis.' }, { status: 400 });
       }
 
       const cleanTrades = trades.map((t) => ({
@@ -95,7 +95,7 @@ Fokuskan pada:
 - Konsistensi ukuran lot (volume) dan saran perbaikan.`;
 
       const model = genAI.getGenerativeModel({
-        model: 'gemini-3.5-flash',
+        model: 'gemini-2.5-flash',
         generationConfig: {
           responseMimeType: 'application/json',
         },
@@ -142,7 +142,7 @@ Harap berikan respon Anda dalam format JSON terstruktur dengan kunci berikut (Pa
 Respon harus dalam Bahasa Indonesia.`;
 
       const model = genAI.getGenerativeModel({
-        model: 'gemini-3.5-flash',
+        model: 'gemini-2.5-flash',
         generationConfig: {
           responseMimeType: 'application/json',
         },
@@ -184,7 +184,7 @@ Format keluaran Anda dalam Markdown polos dengan struktur/bagian yang jelas:
 3. **Motivasi Harian**`;
 
       const model = genAI.getGenerativeModel({
-        model: 'gemini-3.5-flash',
+        model: 'gemini-2.5-flash',
       });
 
       const result = await model.generateContent(prompt);

@@ -63,8 +63,8 @@ export async function POST(request: NextRequest) {
 
     const genAI = new GoogleGenerativeAI(geminiApiKey);
     const model = genAI.getGenerativeModel({
-      model: 'gemini-3.5-flash',
-      systemInstruction: 'Kamu adalah Tradiary AI Assistant, asisten trading profesional yang membantu trader memahami performa trading mereka, strategi, psikologi trading, dan manajemen risiko. Jawab dalam Bahasa Indonesia. Berikan jawaban yang singkat, jelas, dan actionable.',
+      model: 'gemini-2.5-flash',
+      systemInstruction: 'Kamu adalah Tradiary AI Assistant, customer service dan asisten trading resmi Tradiary. Kamu HANYA boleh menjawab pertanyaan seputar:\n1. Fitur dan cara penggunaan Tradiary\n2. Analisis dan strategi trading\n3. Manajemen risiko dan psikologi trading\n4. Pertanyaan umum tentang trading forex, saham, crypto\n\nJika ditanya diluar topik tersebut, tolak dengan sopan dan arahkan kembali ke topik trading atau fitur Tradiary.\nJawab dalam Bahasa Indonesia. Singkat, jelas, dan actionable.',
     });
 
     // 3. Format history for startChat (excluding the latest user message)

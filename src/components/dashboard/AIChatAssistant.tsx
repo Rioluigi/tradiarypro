@@ -67,6 +67,8 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
   const [pastJournals, setPastJournals] = useState<JournalEntry[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [expandedJournalId, setExpandedJournalId] = useState<string | null>(null);
+  const [journalError, setJournalError] = useState<string | null>(null);
+  const [insightError, setInsightError] = useState<string | null>(null);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -145,6 +147,7 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
     if (!journalInput.trim() || isJournalAnalyzing) return;
     setIsJournalAnalyzing(true);
     setJournalAiResponse('');
+    setJournalError(null);
     try {
       const res = await fetch('/api/ai/analyze', {
         method: 'POST',
@@ -156,7 +159,7 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || 'Terjadi kesalahan saat menghubungi AI.');
+        setJournalError(data.error || 'Terjadi kesalahan saat menghubungi AI.');
         return;
       }
       
@@ -177,6 +180,7 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
 
       if (saveError) {
         console.error('Error saving journal to DB:', saveError.message);
+        setJournalError(`Evaluasi berhasil dari AI, namun gagal menyimpan ke database: ${saveError.message}`);
       } else {
         setJournalInput('');
         fetchPastJournals();
@@ -184,7 +188,7 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : 'Terjadi kesalahan';
       console.error('Error in journal submission:', err);
-      alert(`Gagal menganalisis jurnal: ${errMsg}`);
+      setJournalError(`Gagal menganalisis jurnal: ${errMsg}`);
     } finally {
       setIsJournalAnalyzing(false);
     }
@@ -214,6 +218,7 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
     if (trades.length === 0 || isAnalyzing) return;
     setIsAnalyzing(true);
     setInsights(null);
+    setInsightError(null);
     try {
       const res = await fetch('/api/ai/analyze', {
         method: 'POST',
@@ -225,14 +230,14 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || 'Gagal mengambil insight AI.');
+        setInsightError(data.error || 'Gagal mengambil insight AI.');
         return;
       }
       setInsights(data);
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : 'Terjadi kesalahan';
       console.error('Error fetching AI insights:', err);
-      alert(`Gagal menganalisis trade: ${errMsg}`);
+      setInsightError(`Gagal menganalisis trade: ${errMsg}`);
     } finally {
       setIsAnalyzing(false);
     }
@@ -424,6 +429,14 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
               </div>
             )}
 
+            {/* Error State */}
+            {journalError && (
+              <div className="p-4 rounded-xl border border-red-500/20 bg-red-500/5 text-red-500 text-xs font-semibold leading-relaxed animate-fade-in flex items-start gap-2">
+                <span className="flex-shrink-0">⚠️</span>
+                <span>{journalError}</span>
+              </div>
+            )}
+
             {/* AI Response Display */}
             {journalAiResponse && !isJournalAnalyzing && (
               <div className="p-4 rounded-xl border border-purple-500/20 bg-purple-950/10 shadow-inner space-y-2 animate-fade-in">
@@ -562,6 +575,14 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
                   <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
                   <p className="text-xs font-bold text-purple-300">AI sedang memproses transaksi Anda...</p>
                   <p className="text-[10px] text-slate-500">Mengkaji pola instrumen, win-rate, dan setup.</p>
+                </div>
+              )}
+
+              {/* Error State */}
+              {insightError && (
+                <div className="p-4 rounded-xl border border-red-500/20 bg-red-500/5 text-red-500 text-xs font-semibold leading-relaxed animate-fade-in flex items-start gap-2">
+                  <span className="flex-shrink-0">⚠️</span>
+                  <span>{insightError}</span>
                 </div>
               )}
 
