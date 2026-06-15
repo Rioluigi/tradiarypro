@@ -13,6 +13,10 @@ export interface Trade {
   profit: number;
   commission: number;
   created_at: string;
+  notes?: string | null;
+  screenshot_url?: string | null;
+  strategy_tag?: string | null;
+  rating?: number | null;
 }
 
 export interface TradeInsert {
@@ -50,4 +54,6 @@ export interface KPIData {
   winRate: number;
   profitFactor: number;
   totalTrades: number;
+  cumulativeProfit: number;
+  cumulativeLoss: number;
 }

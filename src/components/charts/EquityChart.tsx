@@ -10,8 +10,10 @@ import {
   AreaChart,
 } from 'recharts';
 import { Trade } from '@/types/trade';
-import { formatShortDate, formatCurrency } from '@/lib/utils';
+import { formatShortDate } from '@/lib/utils';
 import { TrendingUp } from 'lucide-react';
+import { useCurrency } from '@/components/providers/AppProvider';
+
 
 interface EquityChartProps {
   trades: Trade[];
@@ -49,6 +51,7 @@ interface CustomTooltipProps {
 }
 
 function CustomTooltip({ active, payload }: CustomTooltipProps) {
+  const { formatCurrency } = useCurrency();
   if (!active || !payload || payload.length === 0) return null;
 
   const data = payload[0];
@@ -70,6 +73,7 @@ function CustomTooltip({ active, payload }: CustomTooltipProps) {
 }
 
 export default function EquityChart({ trades }: EquityChartProps) {
+  const { formatCurrency, activeCurrencySymbol } = useCurrency();
   const data = buildEquityData(trades);
 
   if (data.length === 0) {
@@ -130,12 +134,12 @@ export default function EquityChart({ trades }: EquityChartProps) {
               <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
                 <stop
                   offset="5%"
-                  stopColor={isPositive ? '#10b981' : '#ef4444'}
+                  stopColor={isPositive ? 'var(--accent)' : '#ef4444'}
                   stopOpacity={0.3}
                 />
                 <stop
                   offset="95%"
-                  stopColor={isPositive ? '#10b981' : '#ef4444'}
+                  stopColor={isPositive ? 'var(--accent)' : '#ef4444'}
                   stopOpacity={0}
                 />
               </linearGradient>
@@ -156,20 +160,20 @@ export default function EquityChart({ trades }: EquityChartProps) {
               axisLine={false}
               tickLine={false}
               tick={{ fontSize: 11, fill: '#64748b' }}
-              tickFormatter={(value: number) => `$${value}`}
+              tickFormatter={(value: number) => `${activeCurrencySymbol}${value.toLocaleString()}`}
               dx={-8}
             />
             <Tooltip content={<CustomTooltip />} />
             <Area
               type="monotone"
               dataKey="equity"
-              stroke={isPositive ? '#10b981' : '#ef4444'}
+              stroke={isPositive ? 'var(--accent)' : '#ef4444'}
               strokeWidth={2.5}
               fill={`url(#${gradientId})`}
               dot={false}
               activeDot={{
                 r: 5,
-                fill: isPositive ? '#10b981' : '#ef4444',
+                fill: isPositive ? 'var(--accent)' : '#ef4444',
                 stroke: '#1e293b',
                 strokeWidth: 2,
               }}

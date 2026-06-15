@@ -90,6 +90,7 @@ body {
     opacity: 0;
     transform: translateY(8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -101,6 +102,7 @@ body {
     opacity: 0;
     transform: translateX(-12px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -112,6 +114,7 @@ body {
     opacity: 0;
     transform: translateY(16px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -119,9 +122,12 @@ body {
 }
 
 @keyframes pulse-glow {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4);
   }
+
   50% {
     box-shadow: 0 0 0 8px rgba(37, 99, 235, 0);
   }
@@ -131,15 +137,19 @@ body {
   0% {
     background-position: -200% 0;
   }
+
   100% {
     background-position: 200% 0;
   }
 }
 
 @keyframes float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-4px);
   }
@@ -183,11 +193,25 @@ body {
   }
 
   /* Staggered animation delays */
-  .delay-100 { animation-delay: 100ms; }
-  .delay-200 { animation-delay: 200ms; }
-  .delay-300 { animation-delay: 300ms; }
-  .delay-400 { animation-delay: 400ms; }
-  .delay-500 { animation-delay: 500ms; }
+  .delay-100 {
+    animation-delay: 100ms;
+  }
+
+  .delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .delay-300 {
+    animation-delay: 300ms;
+  }
+
+  .delay-400 {
+    animation-delay: 400ms;
+  }
+
+  .delay-500 {
+    animation-delay: 500ms;
+  }
 
   /* Profit/Loss colors */
   .text-profit {
@@ -212,13 +236,353 @@ body {
    ======================================== */
 
 .skeleton {
-  background: linear-gradient(
-    90deg,
-    rgba(30, 41, 59, 0.5) 25%,
-    rgba(51, 65, 85, 0.5) 50%,
-    rgba(30, 41, 59, 0.5) 75%
-  );
+  background: linear-gradient(90deg,
+      rgba(30, 41, 59, 0.5) 25%,
+      rgba(51, 65, 85, 0.5) 50%,
+      rgba(30, 41, 59, 0.5) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 0.5rem;
+}
+
+/* ========================================
+   Theme Transitions & Dynamic CSS Variable Mappings
+   ──────────────────────────────────────────
+   SCOPED to .themed-app so auth pages (login, register)
+   are NOT affected by these overrides.
+   ======================================== */
+
+.themed-app,
+.themed-app main,
+.themed-app [class*="glass"],
+.themed-app input,
+.themed-app select,
+.themed-app textarea,
+.themed-app table,
+.themed-app tr,
+.themed-app td,
+.themed-app th {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.themed-app {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Backgrounds */
+.themed-app .bg-slate-900,
+.themed-app [class*="bg-slate-900"] {
+  background-color: var(--bg-primary) !important;
+}
+
+.themed-app .bg-slate-800,
+.themed-app .bg-slate-850,
+.themed-app [class*="bg-slate-800"],
+.themed-app [class*="bg-slate-850"],
+.themed-app .glass,
+.themed-app .glass-card {
+  background-color: var(--bg-card) !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Hover overlays */
+.themed-app .hover\:bg-slate-800\/80:hover,
+.themed-app .hover\:bg-slate-800:hover,
+.themed-app [class*="hover:bg-slate-800"]:hover,
+.themed-app .hover\:bg-slate-700:hover,
+.themed-app [class*="hover:bg-slate-700"]:hover,
+.themed-app .hover\:bg-slate-600:hover,
+.themed-app [class*="hover:bg-slate-600"]:hover {
+  background-color: var(--border) !important;
+}
+
+/* Borders */
+.themed-app .border-slate-700,
+.themed-app .border-slate-800,
+.themed-app [class*="border-slate-700"],
+.themed-app [class*="border-slate-800"],
+.themed-app hr {
+  border-color: var(--border) !important;
+}
+
+/* Text Colors */
+.themed-app .text-white,
+.themed-app [class*="text-white"],
+.themed-app [class*="text-slate-100"],
+.themed-app [class*="text-slate-200"] {
+  color: var(--text-primary) !important;
+}
+
+.themed-app .text-slate-300,
+.themed-app .text-slate-400,
+.themed-app .text-slate-500,
+.themed-app [class*="text-slate-300"],
+.themed-app [class*="text-slate-400"],
+.themed-app [class*="text-slate-500"] {
+  color: var(--text-secondary) !important;
+}
+
+/* Inputs & Form Elements */
+.themed-app input,
+.themed-app select,
+.themed-app textarea {
+  background-color: var(--bg-card) !important;
+  border-color: var(--border) !important;
+  color: var(--text-primary) !important;
+}
+
+.themed-app input:focus,
+.themed-app select:focus,
+.themed-app textarea:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px var(--accent-dim) !important;
+}
+
+.themed-app input::placeholder,
+.themed-app textarea::placeholder {
+  color: var(--text-muted) !important;
+}
+
+.themed-app select option {
+  background-color: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Tables */
+.themed-app table {
+  border-color: var(--border) !important;
+}
+
+.themed-app thead tr,
+.themed-app thead th {
+  background-color: var(--bg-primary) !important;
+  border-color: var(--border) !important;
+  color: var(--text-secondary) !important;
+}
+
+.themed-app tbody tr {
+  border-color: var(--border) !important;
+}
+
+.themed-app tbody tr:hover {
+  background-color: var(--bg-primary) !important;
+  opacity: 0.95;
+}
+
+.themed-app td {
+  color: var(--text-primary) !important;
+  border-color: var(--border) !important;
+}
+
+/* Calendar or alternating row bg overrides */
+.themed-app [class*="bg-slate-800"][class*="30"],
+.themed-app [class*="bg-slate-900"][class*="10"],
+.themed-app [class*="bg-slate-900"][class*="40"] {
+  background-color: var(--bg-primary) !important;
+}
+
+/* Recharts Tooltips and elements */
+.themed-app .recharts-tooltip-wrapper,
+.themed-app [class*="bg-slate-800"][class*="95"] {
+  background-color: var(--bg-card) !important;
+  border-color: var(--border) !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+.themed-app .recharts-cartesian-grid line {
+  stroke: var(--border) !important;
+  stroke-opacity: 0.5 !important;
+}
+
+.themed-app .recharts-text.recharts-cartesian-axis-tick-value {
+  fill: var(--text-secondary) !important;
+}
+
+/* Skeleton loader matching theme colors */
+.themed-app .skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-primary) 25%,
+    var(--border) 50%,
+    var(--bg-primary) 75%
+  ) !important;
+  background-size: 200% 100% !important;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0.5;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.themed-app .animate-scale-in {
+  animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ========================================
+   Sidebar Overrides (Force dark navy & glassmorphic look in all modes)
+   ======================================== */
+.themed-app aside.sidebar-glass,
+.themed-app aside.sidebar-glass-mobile,
+.themed-app aside.sidebar-glass *,
+.themed-app aside.sidebar-glass-mobile * {
+  /* Restore transitions */
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Sidebar background & border */
+.themed-app aside.sidebar-glass {
+  background-color: rgba(15, 23, 42, 0.8) !important;
+  border-color: rgba(51, 65, 85, 0.5) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+}
+
+.themed-app aside.sidebar-glass-mobile {
+  background-color: rgba(15, 23, 42, 0.95) !important;
+  border-color: rgba(51, 65, 85, 0.5) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+}
+
+/* Sidebar inner elements border */
+.themed-app aside.sidebar-glass .border-b,
+.themed-app aside.sidebar-glass-mobile .border-b,
+.themed-app aside.sidebar-glass [class*="border-slate-"],
+.themed-app aside.sidebar-glass-mobile [class*="border-slate-"] {
+  border-color: rgba(51, 65, 85, 0.5) !important;
+}
+
+/* User Account section box */
+.themed-app aside.sidebar-glass .bg-slate-800\/50,
+.themed-app aside.sidebar-glass-mobile .bg-slate-800\/50,
+.themed-app aside.sidebar-glass [class*="bg-slate-800"],
+.themed-app aside.sidebar-glass-mobile [class*="bg-slate-800"] {
+  background-color: rgba(30, 41, 59, 0.5) !important;
+  border-color: rgba(51, 65, 85, 0.3) !important;
+}
+
+/* Inactive nav buttons */
+.themed-app aside.sidebar-glass button:not([style*="color"]),
+.themed-app aside.sidebar-glass-mobile button:not([style*="color"]) {
+  color: #94a3b8 !important; /* text-slate-400 */
+}
+
+.themed-app aside.sidebar-glass button:not([style*="color"]):hover,
+.themed-app aside.sidebar-glass-mobile button:not([style*="color"]):hover {
+  color: #f1f5f9 !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Active nav buttons override (inline styles use color: var(--accent)) */
+.themed-app aside.sidebar-glass button[style*="color"],
+.themed-app aside.sidebar-glass-mobile button[style*="color"] {
+  color: var(--accent) !important;
+  background-color: var(--accent-dim) !important;
+  border-color: var(--accent-border) !important;
+}
+
+/* Special text classes in sidebar */
+.themed-app aside.sidebar-glass .text-white,
+.themed-app aside.sidebar-glass-mobile .text-white,
+.themed-app aside.sidebar-glass [class*="text-white"],
+.themed-app aside.sidebar-glass-mobile [class*="text-white"],
+.themed-app aside.sidebar-glass [class*="text-slate-100"],
+.themed-app aside.sidebar-glass-mobile [class*="text-slate-100"],
+.themed-app aside.sidebar-glass [class*="text-slate-200"],
+.themed-app aside.sidebar-glass-mobile [class*="text-slate-200"] {
+  color: #f1f5f9 !important;
+}
+
+.themed-app aside.sidebar-glass .text-slate-300,
+.themed-app aside.sidebar-glass-mobile .text-slate-300,
+.themed-app aside.sidebar-glass [class*="text-slate-300"],
+.themed-app aside.sidebar-glass-mobile [class*="text-slate-300"] {
+  color: #cbd5e1 !important;
+}
+
+.themed-app aside.sidebar-glass .text-slate-400,
+.themed-app aside.sidebar-glass-mobile .text-slate-400,
+.themed-app aside.sidebar-glass [class*="text-slate-400"],
+.themed-app aside.sidebar-glass-mobile [class*="text-slate-400"] {
+  color: #94a3b8 !important;
+}
+
+.themed-app aside.sidebar-glass .text-slate-500,
+.themed-app aside.sidebar-glass-mobile .text-slate-500,
+.themed-app aside.sidebar-glass [class*="text-slate-500"],
+.themed-app aside.sidebar-glass-mobile [class*="text-slate-500"] {
+  color: #64748b !important;
+}
+
+/* Sign out button hover state */
+.themed-app aside.sidebar-glass button.hover\:text-red-400:hover,
+.themed-app aside.sidebar-glass-mobile button.hover\:text-red-400:hover {
+  color: #f87171 !important;
+  background-color: rgba(239, 68, 68, 0.1) !important;
+}
+
+/* Free Plan Box & Upgrade Buttons */
+.themed-app aside.sidebar-glass [class*="border-indigo-"],
+.themed-app aside.sidebar-glass-mobile [class*="border-indigo-"] {
+  border-color: rgba(99, 102, 241, 0.4) !important;
+}
+
+.themed-app aside.sidebar-glass [class*="bg-indigo-"],
+.themed-app aside.sidebar-glass-mobile [class*="bg-indigo-"] {
+  background-color: rgba(99, 102, 241, 0.05) !important;
+}
+
+.themed-app aside.sidebar-glass [class*="text-indigo-"],
+.themed-app aside.sidebar-glass-mobile [class*="text-indigo-"] {
+  color: #818cf8 !important;
+}
+
+.themed-app aside.sidebar-glass button.bg-indigo-600,
+.themed-app aside.sidebar-glass-mobile button.bg-indigo-600 {
+  background-color: #4f46e5 !important;
+  color: #ffffff !important;
+}
+
+.themed-app aside.sidebar-glass button.bg-indigo-600:hover,
+.themed-app aside.sidebar-glass-mobile button.bg-indigo-600:hover {
+  background-color: #4338ca !important;
+}
+
+/* Mobile menu button toggle */
+.themed-app button.mobile-sidebar-toggle {
+  background-color: rgba(15, 23, 42, 0.9) !important;
+  border-color: rgba(51, 65, 85, 0.5) !important;
+  color: #94a3b8 !important;
+}
+
+.themed-app button.mobile-sidebar-toggle:hover {
+  color: #ffffff !important;
+  background-color: rgba(15, 23, 42, 1) !important;
 }

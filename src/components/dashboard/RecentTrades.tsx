@@ -1,6 +1,7 @@
 'use client';
 
-import { formatCurrency, formatDate, cn } from '@/lib/utils';
+import { formatDate, cn } from '@/lib/utils';
+import { useCurrency } from '@/components/providers/AppProvider';
 import { Trade } from '@/types/trade';
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
@@ -9,6 +10,8 @@ interface RecentTradesProps {
 }
 
 export default function RecentTrades({ trades }: RecentTradesProps) {
+  const { formatCurrency } = useCurrency();
+
   if (trades.length === 0) {
     return (
       <div className="rounded-2xl border border-slate-700/50 bg-slate-800/50 backdrop-blur-sm p-6 shadow-xl shadow-black/10 animate-fade-in">
@@ -100,7 +103,7 @@ export default function RecentTrades({ trades }: RecentTradesProps) {
                     {formatCurrency(trade.profit)}
                   </span>
                 </td>
-                <td className="py-3 px-3 text-right text-slate-500 text-xs hidden md:table-cell">
+                <td className="py-3 px-3 text-right text-slate-500 text-xs hidden md:table-cell" suppressHydrationWarning>
                   {formatDate(trade.close_time)}
                 </td>
               </tr>

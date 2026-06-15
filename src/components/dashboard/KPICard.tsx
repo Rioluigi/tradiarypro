@@ -40,17 +40,25 @@ export default function KPICard({
 
   return (
     <div
-      className="group relative rounded-2xl border border-slate-700/50 bg-slate-800/50 backdrop-blur-sm p-6 shadow-xl shadow-black/10 transition-all duration-300 hover:border-slate-600/50 hover:shadow-2xl hover:shadow-blue-500/5 hover:-translate-y-0.5 animate-fade-in overflow-hidden"
+      className="group relative rounded-2xl border border-slate-700/50 bg-slate-800/50 backdrop-blur-sm p-4 sm:p-6 shadow-xl shadow-black/10 transition-all duration-300 hover:border-slate-600/50 hover:shadow-2xl hover:-translate-y-0.5 animate-fade-in overflow-hidden"
       style={{ animationDelay: `${delay}ms` }}
     >
       {/* Subtle gradient overlay on hover */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-600/0 group-hover:from-blue-500/5 group-hover:to-blue-600/5 transition-all duration-500 rounded-2xl" />
+      <div 
+        className="absolute inset-0 transition-all duration-500 rounded-2xl pointer-events-none opacity-0 group-hover:opacity-100" 
+        style={{ backgroundColor: 'var(--accent-dim)' }}
+      />
 
       <div className="relative">
         {/* Header row */}
         <div className="flex items-center justify-between mb-4">
           <p className="text-sm font-medium text-slate-400">{title}</p>
-          <div className="w-10 h-10 rounded-xl bg-slate-700/50 flex items-center justify-center text-slate-400 group-hover:text-blue-400 transition-colors duration-300">
+          <div 
+            className="w-10 h-10 rounded-xl bg-slate-700/50 flex items-center justify-center text-slate-400 transition-colors duration-300"
+            style={{
+              // Apply hover styles using CSS variable via Tailwind or inline
+            }}
+          >
             {icon}
           </div>
         </div>

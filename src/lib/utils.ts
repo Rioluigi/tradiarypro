@@ -32,9 +32,11 @@ export function calculateKPIs(trades: { profit: number }[]): {
   winRate: number;
   profitFactor: number;
   totalTrades: number;
+  cumulativeProfit: number;
+  cumulativeLoss: number;
 } {
   if (trades.length === 0) {
-    return { totalProfitLoss: 0, winRate: 0, profitFactor: 0, totalTrades: 0 };
+    return { totalProfitLoss: 0, winRate: 0, profitFactor: 0, totalTrades: 0, cumulativeProfit: 0, cumulativeLoss: 0 };
   }
 
   const totalTrades = trades.length;
@@ -44,11 +46,11 @@ export function calculateKPIs(trades: { profit: number }[]): {
   const totalProfitLoss = trades.reduce((sum, t) => sum + t.profit, 0);
   const winRate = (winningTrades.length / totalTrades) * 100;
 
-  const totalProfit = winningTrades.reduce((sum, t) => sum + t.profit, 0);
-  const totalLoss = Math.abs(losingTrades.reduce((sum, t) => sum + t.profit, 0));
-  const profitFactor = totalLoss === 0 ? (totalProfit > 0 ? Infinity : 0) : totalProfit / totalLoss;
+  const cumulativeProfit = winningTrades.reduce((sum, t) => sum + t.profit, 0);
+  const cumulativeLoss = Math.abs(losingTrades.reduce((sum, t) => sum + t.profit, 0));
+  const profitFactor = cumulativeLoss === 0 ? (cumulativeProfit > 0 ? Infinity : 0) : cumulativeProfit / cumulativeLoss;
 
-  return { totalProfitLoss, winRate, profitFactor, totalTrades };
+  return { totalProfitLoss, winRate, profitFactor, totalTrades, cumulativeProfit, cumulativeLoss };
 }
 
 export function cn(...classes: (string | boolean | undefined | null)[]): string {

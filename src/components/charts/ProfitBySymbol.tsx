@@ -11,7 +11,7 @@ import {
   Cell,
 } from 'recharts';
 import { Trade } from '@/types/trade';
-import { formatCurrency } from '@/lib/utils';
+import { useCurrency } from '@/components/providers/AppProvider';
 import { BarChart3 } from 'lucide-react';
 
 interface ProfitBySymbolProps {
@@ -30,6 +30,7 @@ interface CustomTooltipProps {
 }
 
 function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
+  const { formatCurrency } = useCurrency();
   if (!active || !payload || payload.length === 0) return null;
 
   const data = payload[0];
@@ -67,6 +68,7 @@ function buildSymbolData(trades: Trade[]): SymbolData[] {
 }
 
 export default function ProfitBySymbol({ trades }: ProfitBySymbolProps) {
+  const { activeCurrencySymbol } = useCurrency();
   const data = buildSymbolData(trades);
 
   if (data.length === 0) {
@@ -128,7 +130,7 @@ export default function ProfitBySymbol({ trades }: ProfitBySymbolProps) {
               axisLine={false}
               tickLine={false}
               tick={{ fontSize: 11, fill: '#64748b' }}
-              tickFormatter={(value: number) => `$${value}`}
+              tickFormatter={(value: number) => `${activeCurrencySymbol}${value.toLocaleString()}`}
               dx={-8}
             />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(51, 65, 85, 0.2)' }} />

@@ -25,5 +25,5 @@ export default async function TradeHistoryPage() {
   // Get unique symbols for filter dropdown
   const symbols = Array.from(new Set(allTrades.map((t) => t.symbol))).sort();
 
-  return <TradeHistoryClient trades={allTrades} symbols={symbols} />;
+  return <TradeHistoryClient trades={allTrades} symbols={symbols} userId={user.id} />;
 }

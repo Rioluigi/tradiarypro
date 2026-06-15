@@ -15,7 +15,15 @@ import {
   TrendingUp,
   Menu,
   X,
+  Calendar,
+  Calculator,
+  Sun,
+  Moon,
+  Shield,
+  Sparkles,
 } from 'lucide-react';
+import { useCurrency } from '@/components/providers/AppProvider';
+
 
 interface NavItem {
   label: string;
@@ -40,7 +48,17 @@ const navItems: NavItem[] = [
     icon: <BarChart3 size={20} />,
   },
   {
-    label: 'Webhook Config',
+    label: 'Calculator',
+    href: '/dashboard/calculator',
+    icon: <Calculator size={20} />,
+  },
+  {
+    label: 'Calendar',
+    href: '/dashboard/calendar',
+    icon: <Calendar size={20} />,
+  },
+  {
+    label: 'Setting',
     href: '/dashboard/config',
     icon: <Settings size={20} />,
   },
@@ -48,14 +66,17 @@ const navItems: NavItem[] = [
 
 interface SidebarProps {
   userEmail?: string;
+  subscriptionPlan?: string;
 }
 
-export default function Sidebar({ userEmail }: SidebarProps) {
+export default function Sidebar({ userEmail, subscriptionPlan = 'free' }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { theme, toggleTheme, isAdmin } = useCurrency();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
@@ -78,8 +99,14 @@ export default function Sidebar({ userEmail }: SidebarProps) {
     <>
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-6 border-b border-slate-700/50">
-        <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
-          <TrendingUp size={20} className="text-white" />
+        <div 
+          className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center shadow-lg text-white"
+          style={{
+            backgroundColor: 'var(--accent)',
+            boxShadow: '0 4px 12px var(--accent-glow)',
+          }}
+        >
+          <TrendingUp size={20} />
         </div>
         {!collapsed && (
           <div className="animate-fade-in">
@@ -97,36 +124,132 @@ export default function Sidebar({ userEmail }: SidebarProps) {
       <nav className="flex-1 px-3 py-4 space-y-1.5">
         {navItems.map((item) => {
           const active = isActive(item.href);
+          const isSetting = item.label === 'Setting';
           return (
+            <div key={item.href} className="w-full">
+              {isSetting && subscriptionPlan === 'free' && !collapsed && (
+                <div className="mx-3 my-4 p-3.5 rounded-xl border border-dashed border-indigo-500/40 bg-indigo-50/5 text-left space-y-2 animate-fade-in">
+                  <div className="flex items-center gap-2 text-indigo-400 font-bold text-xs select-none">
+                    <Sparkles size={14} className="animate-pulse" />
+                    <span>Free Plan</span>
+                  </div>
+                  <p className="text-[10px] text-slate-400 font-medium leading-normal">
+                    Upgrade for more features
+                  </p>
+                  <button
+                    onClick={() => {
+                      router.push('/dashboard/config?tab=billing');
+                      setMobileOpen(false);
+                    }}
+                    className="w-full py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] transition-colors shadow-md shadow-indigo-600/10 active:scale-[0.98]"
+                  >
+                    Upgrade ✨
+                  </button>
+                </div>
+              )}
+              {isSetting && subscriptionPlan === 'free' && collapsed && (
+                <button
+                  onClick={() => {
+                    router.push('/dashboard/config?tab=billing');
+                    setMobileOpen(false);
+                  }}
+                  className="w-10 h-10 mx-auto mb-3 rounded-xl flex items-center justify-center bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 border border-dashed border-indigo-500/40 transition-colors animate-fade-in"
+                  title="Upgrade to Pro"
+                >
+                  <Sparkles size={16} className="animate-pulse" />
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  router.push(item.href);
+                  setMobileOpen(false);
+                }}
+                className={cn(
+                  'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border border-transparent',
+                  active
+                    ? 'shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/80',
+                  collapsed && 'justify-center'
+                )}
+                style={active ? {
+                  backgroundColor: 'var(--accent-dim)',
+                  color: 'var(--accent)',
+                  borderColor: 'var(--accent-border)',
+                  boxShadow: '0 1px 2px var(--accent-glow)',
+                } : undefined}
+                title={collapsed ? item.label : undefined}
+              >
+                <span style={active ? { color: 'var(--accent)' } : undefined}>
+                  {item.icon}
+                </span>
+                {!collapsed && <span>{item.label}</span>}
+                {active && !collapsed && (
+                  <div 
+                    className="ml-auto w-1.5 h-1.5 rounded-full animate-pulse-glow" 
+                    style={{ backgroundColor: 'var(--accent)' }}
+                  />
+                )}
+              </button>
+            </div>
+          );
+        })}
+
+        {isAdmin && (
+          <>
+            <div className="my-2 border-t border-slate-800" />
             <button
-              key={item.href}
               onClick={() => {
-                router.push(item.href);
+                router.push('/admin');
                 setMobileOpen(false);
               }}
               className={cn(
-                'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
-                active
-                  ? 'bg-gradient-to-r from-blue-600/20 to-blue-500/10 text-blue-400 border border-blue-500/20 shadow-sm shadow-blue-500/10'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/80',
+                'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border border-transparent',
+                pathname.startsWith('/admin')
+                  ? 'shadow-sm'
+                  : 'text-purple-400/80 hover:text-purple-300 hover:bg-purple-950/20',
                 collapsed && 'justify-center'
               )}
-              title={collapsed ? item.label : undefined}
+              style={pathname.startsWith('/admin') ? {
+                backgroundColor: 'var(--accent-dim)',
+                color: 'var(--accent)',
+                borderColor: 'var(--accent-border)',
+                boxShadow: '0 1px 2px var(--accent-glow)',
+              } : undefined}
+              title={collapsed ? 'Admin Panel' : undefined}
             >
-              <span className={cn(active && 'text-blue-400')}>
-                {item.icon}
+              <span style={pathname.startsWith('/admin') ? { color: 'var(--accent)' } : undefined}>
+                <Shield size={20} />
               </span>
-              {!collapsed && <span>{item.label}</span>}
-              {active && !collapsed && (
-                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse-glow" />
+              {!collapsed && <span>Admin Panel</span>}
+              {pathname.startsWith('/admin') && !collapsed && (
+                <div 
+                  className="ml-auto w-1.5 h-1.5 rounded-full animate-pulse-glow" 
+                  style={{ backgroundColor: 'var(--accent)' }}
+                />
               )}
             </button>
-          );
-        })}
+          </>
+        )}
       </nav>
 
       {/* Bottom section */}
       <div className="border-t border-slate-700/50 px-3 py-4 space-y-3">
+        {/* Theme Toggle Button */}
+        <button
+          onClick={toggleTheme}
+          className={cn(
+            'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium',
+            'text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition-all duration-200',
+            collapsed && 'justify-center'
+          )}
+          title={collapsed ? (theme === 'dark' ? 'Light Mode' : 'Dark Mode') : undefined}
+        >
+          {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          {!collapsed && (
+            <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+          )}
+        </button>
+
         {/* User info */}
         {!collapsed && userEmail && (
           <div className="px-3 py-2 rounded-xl bg-slate-800/50 border border-slate-700/30">
@@ -165,7 +288,7 @@ export default function Sidebar({ userEmail }: SidebarProps) {
       {/* Mobile menu button */}
       <button
         onClick={() => setMobileOpen(!mobileOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2.5 rounded-xl bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 text-slate-400 hover:text-white transition-colors"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2.5 rounded-xl bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 text-slate-400 hover:text-white transition-colors mobile-sidebar-toggle"
       >
         {mobileOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
@@ -182,8 +305,9 @@ export default function Sidebar({ userEmail }: SidebarProps) {
       <aside
         className={cn(
           'lg:hidden fixed top-0 left-0 z-40 h-screen w-64 bg-slate-900/95 backdrop-blur-xl border-r border-slate-700/50 flex flex-col',
+          'sidebar-glass-mobile',
           'transform transition-transform duration-300 ease-in-out',
-          mobileOpen ? 'translate-x-0' : '-translate-x-full'
+          mobileOpen ? 'translate-x-0 pointer-events-auto' : '-translate-x-full pointer-events-none'
         )}
       >
         {sidebarContent}
@@ -193,7 +317,7 @@ export default function Sidebar({ userEmail }: SidebarProps) {
       <aside
         className={cn(
           'hidden lg:flex fixed top-0 left-0 z-40 h-screen flex-col border-r border-slate-700/50',
-          'bg-slate-900/80 backdrop-blur-xl',
+          'bg-slate-900/80 backdrop-blur-xl sidebar-glass',
           'transition-all duration-300 ease-in-out',
           collapsed ? 'w-[72px]' : 'w-64'
         )}

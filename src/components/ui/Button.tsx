@@ -17,7 +17,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variants = {
       primary:
-        'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white shadow-lg shadow-blue-500/25 focus:ring-blue-500',
+        'text-white hover:opacity-90 transition-opacity',
       secondary:
         'bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600 focus:ring-slate-500',
       danger:
@@ -36,6 +36,13 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={cn(baseStyles, variants[variant], sizes[size], className)}
+        style={{
+          ...(variant === 'primary' ? {
+            backgroundColor: 'var(--accent)',
+            boxShadow: '0 4px 14px var(--accent-glow)',
+          } : {}),
+          ...props.style
+        }}
         disabled={disabled || isLoading}
         {...props}
       >

@@ -22,5 +22,5 @@ export default async function AnalyticsPage() {
 
   const allTrades: Trade[] = (trades || []) as Trade[];
 
-  return <AnalyticsClient trades={allTrades} />;
+  return <AnalyticsClient trades={allTrades} userId={user.id} />;
 }
