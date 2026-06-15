@@ -104,8 +104,23 @@ Fokuskan pada:
       const result = await model.generateContent(prompt);
       const responseText = result.response.text();
       try {
-        const jsonResult = JSON.parse(responseText || '{}');
-        return NextResponse.json(jsonResult);
+        let cleanText = responseText.trim();
+        if (cleanText.startsWith('```')) {
+          cleanText = cleanText.replace(/^```json\s*/i, '').replace(/```$/, '').trim();
+        }
+        
+        const jsonResult = JSON.parse(cleanText || '{}');
+        
+        const sanitized = {
+          strengths: Array.isArray(jsonResult.strengths) ? jsonResult.strengths : 
+                     Array.isArray(jsonResult.strength) ? jsonResult.strength : [],
+          weaknesses: Array.isArray(jsonResult.weaknesses) ? jsonResult.weaknesses :
+                      Array.isArray(jsonResult.weakness) ? jsonResult.weakness : [],
+          recommendations: Array.isArray(jsonResult.recommendations) ? jsonResult.recommendations :
+                           Array.isArray(jsonResult.recommendation) ? jsonResult.recommendation : [],
+        };
+        
+        return NextResponse.json(sanitized);
       } catch (err) {
         console.error('[AI API] Insight parse error. Raw text:', responseText, err);
         // Fallback if parsing fails
@@ -188,7 +203,28 @@ Format keluaran Anda dalam Markdown polos dengan struktur/bagian yang jelas:
       });
 
       const result = await model.generateContent(prompt);
-      return NextResponse.json({ response: result.response.text() });
+      const responseText = result.response.text();
+
+      // Save journal entry to database inside server route
+      const { error: saveError } = await supabase
+        .from('journal_entries')
+        .insert([
+          {
+            user_id: user.id,
+            content: content,
+            ai_response: responseText,
+          }
+        ]);
+
+      if (saveError) {
+        console.error('[AI API] Error saving journal entry:', saveError.message);
+        return NextResponse.json({ 
+          response: responseText, 
+          warning: `Evaluasi AI berhasil dibuat, namun gagal menyimpan ke database riwayat: ${saveError.message}` 
+        });
+      }
+
+      return NextResponse.json({ response: responseText });
     }
 
     return NextResponse.json({ error: 'Invalid analysis type' }, { status: 400 });

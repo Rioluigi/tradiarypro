@@ -149,6 +149,7 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
     setJournalAiResponse('');
     setJournalError(null);
     try {
+      console.log('Sending journal content for AI analysis:', journalInput);
       const res = await fetch('/api/ai/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -158,6 +159,8 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
         }),
       });
       const data = await res.json();
+      console.log('Received journal analysis response:', data);
+      
       if (!res.ok) {
         setJournalError(data.error || 'Terjadi kesalahan saat menghubungi AI.');
         return;
@@ -166,25 +169,12 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
       const responseText = data.response;
       setJournalAiResponse(responseText);
 
-      // Save to Supabase journal_entries table
-      const supabase = createClient();
-      const { error: saveError } = await supabase
-        .from('journal_entries')
-        .insert([
-          {
-            user_id: userId,
-            content: journalInput,
-            ai_response: responseText,
-          }
-        ]);
-
-      if (saveError) {
-        console.error('Error saving journal to DB:', saveError.message);
-        setJournalError(`Evaluasi berhasil dari AI, namun gagal menyimpan ke database: ${saveError.message}`);
-      } else {
-        setJournalInput('');
-        fetchPastJournals();
+      if (data.warning) {
+        setJournalError(data.warning);
       }
+      
+      setJournalInput('');
+      fetchPastJournals();
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : 'Terjadi kesalahan';
       console.error('Error in journal submission:', err);
@@ -220,6 +210,7 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
     setInsights(null);
     setInsightError(null);
     try {
+      console.log('Sending trades data for AI insights:', trades);
       const res = await fetch('/api/ai/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -229,6 +220,8 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
         }),
       });
       const data = await res.json();
+      console.log('Received AI insights response:', data);
+      
       if (!res.ok) {
         setInsightError(data.error || 'Gagal mengambil insight AI.');
         return;
@@ -596,12 +589,16 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
                       <h4 className="text-[10px] font-bold uppercase tracking-wider">Kekuatan (Strengths)</h4>
                     </div>
                     <ul className="space-y-1.5">
-                      {insights.strengths.map((item, idx) => (
-                        <li key={idx} className="text-[11px] text-slate-350 flex items-start gap-1.5 leading-relaxed">
-                          <span className="text-emerald-400 flex-shrink-0">✓</span>
-                          <span>{item}</span>
-                        </li>
-                      ))}
+                      {insights.strengths && Array.isArray(insights.strengths) ? (
+                        insights.strengths.map((item, idx) => (
+                          <li key={idx} className="text-[11px] text-slate-350 flex items-start gap-1.5 leading-relaxed">
+                            <span className="text-emerald-400 flex-shrink-0">✓</span>
+                            <span>{item}</span>
+                          </li>
+                        ))
+                      ) : (
+                        <li className="text-[11px] text-slate-500">Tidak ada data kekuatan.</li>
+                      )}
                     </ul>
                   </div>
 
@@ -612,12 +609,16 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
                       <h4 className="text-[10px] font-bold uppercase tracking-wider">Kelemahan (Weaknesses)</h4>
                     </div>
                     <ul className="space-y-1.5">
-                      {insights.weaknesses.map((item, idx) => (
-                        <li key={idx} className="text-[11px] text-slate-350 flex items-start gap-1.5 leading-relaxed">
-                          <span className="text-red-400 flex-shrink-0">⚠️</span>
-                          <span>{item}</span>
-                        </li>
-                      ))}
+                      {insights.weaknesses && Array.isArray(insights.weaknesses) ? (
+                        insights.weaknesses.map((item, idx) => (
+                          <li key={idx} className="text-[11px] text-slate-350 flex items-start gap-1.5 leading-relaxed">
+                            <span className="text-red-400 flex-shrink-0">⚠️</span>
+                            <span>{item}</span>
+                          </li>
+                        ))
+                      ) : (
+                        <li className="text-[11px] text-slate-500">Tidak ada data kelemahan.</li>
+                      )}
                     </ul>
                   </div>
 
@@ -628,12 +629,16 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
                       <h4 className="text-[10px] font-bold uppercase tracking-wider">Rekomendasi</h4>
                     </div>
                     <ul className="space-y-1.5">
-                      {insights.recommendations.map((item, idx) => (
-                        <li key={idx} className="text-[11px] text-slate-350 flex items-start gap-1.5 leading-relaxed">
-                          <span className="text-purple-400 flex-shrink-0">✦</span>
-                          <span>{item}</span>
-                        </li>
-                      ))}
+                      {insights.recommendations && Array.isArray(insights.recommendations) ? (
+                        insights.recommendations.map((item, idx) => (
+                          <li key={idx} className="text-[11px] text-slate-350 flex items-start gap-1.5 leading-relaxed">
+                            <span className="text-purple-400 flex-shrink-0">✦</span>
+                            <span>{item}</span>
+                          </li>
+                        ))
+                      ) : (
+                        <li className="text-[11px] text-slate-500">Tidak ada rekomendasi.</li>
+                      )}
                     </ul>
                   </div>
                 </div>
