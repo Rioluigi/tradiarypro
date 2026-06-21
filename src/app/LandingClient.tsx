@@ -134,8 +134,8 @@ export default function LandingClient({ cmsContent }: LandingClientProps) {
       {/* ─── NAVBAR ─── */}
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
-            ? 'bg-white/80 backdrop-blur-md border-b border-slate-100 shadow-sm py-4'
-            : 'bg-transparent py-6'
+          ? 'bg-white/80 backdrop-blur-md border-b border-slate-100 shadow-sm py-4'
+          : 'bg-transparent py-6'
           }`}
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
@@ -551,8 +551,8 @@ export default function LandingClient({ cmsContent }: LandingClientProps) {
             <button
               onClick={() => setBillingCycle('monthly')}
               className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${billingCycle === 'monthly'
-                  ? 'bg-slate-900 text-white shadow-md'
-                  : 'bg-slate-50 text-slate-500 hover:text-slate-800'
+                ? 'bg-slate-900 text-white shadow-md'
+                : 'bg-slate-50 text-slate-500 hover:text-slate-800'
                 }`}
             >
               Monthly
@@ -560,8 +560,8 @@ export default function LandingClient({ cmsContent }: LandingClientProps) {
             <button
               onClick={() => setBillingCycle('yearly')}
               className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${billingCycle === 'yearly'
-                  ? 'bg-slate-900 text-white shadow-md'
-                  : 'bg-slate-50 text-slate-500 hover:text-slate-800'
+                ? 'bg-slate-900 text-white shadow-md'
+                : 'bg-slate-50 text-slate-500 hover:text-slate-800'
                 }`}
             >
               Yearly

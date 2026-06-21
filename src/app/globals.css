@@ -846,4 +846,38 @@ body,
 
 .light .themed-app .bg-\[\#080811\]\/30 {
   background-color: #f9fafb !important;
+}
+
+/* Mobile Sign Out button light mode */
+.light .themed-app button.mobile-signout-btn,
+.light .themed-app .lg\:hidden[title="Sign Out"],
+.light .themed-app .lg\:hidden[title="Back to Dashboard"] {
+  background-color: #ffffff !important;
+  border-color: #e5e7eb !important;
+  color: #374151 !important;
+}
+
+.light .themed-app button.mobile-signout-btn:hover,
+.light .themed-app .lg\:hidden[title="Sign Out"]:hover {
+  color: #dc2626 !important;
+  background-color: rgba(220, 38, 38, 0.08) !important;
+}
+
+.light .themed-app .lg\:hidden[title="Back to Dashboard"]:hover {
+  background-color: #f3f4f6 !important;
+  color: #111827 !important;
+}
+
+/* Admin bottom navigation light mode */
+.light .themed-app div.lg\:hidden.fixed.bottom-0[class*="bg-\[#0d0d1a\]"] {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-color: #e5e7eb !important;
+}
+
+.light .themed-app div.lg\:hidden.fixed.bottom-0 a {
+  color: #374151 !important;
+}
+
+.light .themed-app div.lg\:hidden.fixed.bottom-0 a:hover {
+  color: #111827 !important;
 }

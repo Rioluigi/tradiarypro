@@ -18,6 +18,7 @@ import {
   Sun,
   Moon,
   Loader2,
+  ArrowLeft,
 } from 'lucide-react';
 import { useCurrency } from '@/components/providers/AppProvider';
 
@@ -229,6 +230,25 @@ export default function AdminSidebar({ userEmail }: AdminSidebarProps) {
         {mobileOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
 
+      {/* Mobile Back to Dashboard button */}
+      <button
+        onClick={() => router.push('/dashboard')}
+        className="lg:hidden fixed top-4 left-16 z-50 p-2.5 rounded-xl bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 text-slate-400 hover:text-white transition-colors"
+        title="Back to Dashboard"
+      >
+        <ArrowLeft size={20} />
+      </button>
+
+      {/* Mobile Sign Out button (always accessible in top bar) */}
+      <button
+        onClick={handleSignOut}
+        disabled={isSigningOut}
+        className="lg:hidden fixed top-4 right-16 z-50 p-2.5 rounded-xl bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
+        title="Sign Out"
+      >
+        {isSigningOut ? <Loader2 size={20} className="animate-spin" /> : <LogOut size={20} />}
+      </button>
+
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
@@ -240,7 +260,7 @@ export default function AdminSidebar({ userEmail }: AdminSidebarProps) {
       {/* Mobile sidebar */}
       <aside
         className={cn(
-          'lg:hidden fixed top-0 left-0 z-40 h-screen w-64 bg-[#0d0d1a] border-r border-slate-700/50 flex flex-col',
+          'lg:hidden fixed top-0 left-0 z-40 h-screen w-64 bg-[#0d0d1a] border-r border-slate-700/50 flex flex-col overflow-y-auto',
           'transform transition-transform duration-300 ease-in-out',
           mobileOpen ? 'translate-x-0 pointer-events-auto' : '-translate-x-full pointer-events-none'
         )}

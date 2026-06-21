@@ -297,6 +297,16 @@ export default function Sidebar({ userEmail, subscriptionPlan = 'free' }: Sideba
         {mobileOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
 
+      {/* Mobile Sign Out button (always accessible in top bar) */}
+      <button
+        onClick={handleSignOut}
+        disabled={isSigningOut}
+        className="lg:hidden fixed top-4 right-4 z-50 p-2.5 rounded-xl bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50 mobile-signout-btn"
+        title="Sign Out"
+      >
+        {isSigningOut ? <Loader2 size={20} className="animate-spin" /> : <LogOut size={20} />}
+      </button>
+
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
@@ -308,7 +318,7 @@ export default function Sidebar({ userEmail, subscriptionPlan = 'free' }: Sideba
       {/* Mobile sidebar */}
       <aside
         className={cn(
-          'lg:hidden fixed top-0 left-0 z-40 h-screen w-64 bg-slate-900/95 backdrop-blur-xl border-r border-slate-700/50 flex flex-col',
+          'lg:hidden fixed top-0 left-0 z-40 h-screen w-64 bg-slate-900/95 backdrop-blur-xl border-r border-slate-700/50 flex flex-col overflow-y-auto',
           'sidebar-glass-mobile',
           'transform transition-transform duration-300 ease-in-out',
           mobileOpen ? 'translate-x-0 pointer-events-auto' : '-translate-x-full pointer-events-none'

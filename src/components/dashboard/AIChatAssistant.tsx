@@ -262,7 +262,7 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full flex items-center justify-center text-white cursor-pointer shadow-xl transition-all duration-300 active:scale-[0.95]",
+          "fixed bottom-[5.5rem] lg:bottom-6 right-4 lg:right-6 z-40 w-12 h-12 rounded-full flex items-center justify-center text-white cursor-pointer shadow-xl transition-all duration-300 active:scale-[0.95]",
           isOpen 
             ? "bg-[#7c3aed] border border-purple-500 hover:bg-purple-600 shadow-purple-600/30 rotate-90" 
             : "bg-[#7c3aed] border border-purple-500 hover:bg-purple-500 shadow-purple-600/30 hover:shadow-purple-600/40"
@@ -275,9 +275,13 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
       {/* Chat Popup */}
       <div
         className={cn(
-          "fixed bottom-20 right-6 z-40 w-[350px] sm:w-[400px] h-[480px] max-h-[75vh] max-w-[calc(100vw-2rem)]",
+          "fixed z-40",
+          // Mobile: near full-screen popup anchored to bottom
+          "bottom-0 left-1/2 -translate-x-1/2 w-[95vw] h-[85vh]",
+          // Desktop: positioned popup near floating button
+          "lg:bottom-20 lg:right-6 lg:left-auto lg:translate-x-0 lg:w-[400px] lg:h-[480px] lg:max-h-[75vh]",
           "bg-[#0d0d1a]/95 backdrop-blur-xl border border-purple-500/20 rounded-2xl shadow-2xl shadow-black/30",
-          "flex flex-col overflow-hidden transition-all duration-300 origin-bottom-right",
+          "flex flex-col overflow-hidden transition-all duration-300 origin-bottom lg:origin-bottom-right",
           isOpen 
             ? "opacity-100 translate-y-0 scale-100 pointer-events-auto" 
             : "opacity-0 translate-y-4 scale-95 pointer-events-none"

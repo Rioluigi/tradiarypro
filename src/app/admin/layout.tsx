@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import AdminSidebar from '@/components/layout/AdminSidebar';
+import AdminBottomNavigation from '@/components/layout/AdminBottomNavigation';
 import NotificationBell from '@/components/layout/NotificationBell';
 
 export default async function AdminLayout({
@@ -36,10 +37,12 @@ export default async function AdminLayout({
 
       {/* Main content area */}
       <main className="lg:pl-64 transition-all duration-300">
-        <div className="min-h-screen p-4 pt-16 lg:pt-4 lg:p-8">
+        <div className="min-h-screen p-4 pt-16 pb-24 lg:pt-4 lg:p-8">
           {children}
         </div>
       </main>
+
+      <AdminBottomNavigation />
     </div>
   );
 }
