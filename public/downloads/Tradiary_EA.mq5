@@ -10,7 +10,7 @@
 #property strict
 
 //--- Input parameters
-input string WebhookURL = "https://tradiarypro-64rq.vercel.app/api/webhook";
+input string WebhookURL = "https://tradiarypro.vercel.app/api/webhook";
 input string UserID     = ""; // Paste your User ID here
 input string AccountID  = ""; // Paste your Account ID here
 input bool   EnableLogs = true;

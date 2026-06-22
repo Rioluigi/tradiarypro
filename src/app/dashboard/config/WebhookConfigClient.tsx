@@ -40,7 +40,8 @@ interface WebhookConfigClientProps {
   hasStripeCustomer: boolean;
 }
 
-const WEBHOOK_URL = 'https://tradiary-zeta.vercel.app/api/webhook';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tradiarypro.vercel.app';
+const WEBHOOK_URL = `${SITE_URL}/api/webhook`;
 
 const EA_CODE = `//+------------------------------------------------------------------+
 //|                                                 Tradiary_EA.mq5   |
@@ -54,7 +55,7 @@ const EA_CODE = `//+------------------------------------------------------------
 #property strict
 
 //--- Input parameters
-input string WebhookURL = "\${WEBHOOK_URL}";
+input string WebhookURL = "${WEBHOOK_URL}";
 input string UserID     = ""; // Paste your User ID here
 input string AccountID  = ""; // Paste your Account ID here
 input bool   EnableLogs = true;
@@ -441,6 +442,22 @@ export default function WebhookConfigClient({
     }
   };
 
+  const handleDownloadEA = () => {
+    try {
+      const blob = new Blob([EA_CODE], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'Tradiary_EA.mq5';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error downloading EA file:', err);
+    }
+  };
+
   // ─── Billing State ───
 
   const [portalLoading, setPortalLoading] = useState(false);
@@ -714,9 +731,8 @@ export default function WebhookConfigClient({
                   </p>
                 </div>
               </div>
-              <a
-                href="/downloads/Tradiary_EA.mq5"
-                download="Tradiary_EA.mq5"
+              <button
+                onClick={handleDownloadEA}
                 className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-white text-sm font-medium transition-all duration-200 shadow-lg whitespace-nowrap"
                 style={{
                   backgroundColor: 'var(--accent)',
@@ -725,7 +741,7 @@ export default function WebhookConfigClient({
               >
                 <Download size={18} />
                 Download EA
-              </a>
+              </button>
             </div>
           </div>
 
@@ -996,7 +1012,7 @@ export default function WebhookConfigClient({
                       Check &quot;Allow WebRequest for listed URL&quot; and add:
                     </p>
                     <code className="mt-2 inline-block px-3 py-1.5 rounded-lg bg-slate-900/80 text-sm text-blue-400 font-mono border border-slate-700/50">
-                      https://tradiary-zeta.vercel.app
+                      {SITE_URL}
                     </code>
                   </div>
                 </div>

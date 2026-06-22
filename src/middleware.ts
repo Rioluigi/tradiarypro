@@ -129,7 +129,8 @@ export async function middleware(request: NextRequest) {
       !request.nextUrl.pathname.startsWith('/login') &&
       !request.nextUrl.pathname.startsWith('/register') &&
       !request.nextUrl.pathname.startsWith('/api') &&
-      request.nextUrl.pathname !== '/'
+      request.nextUrl.pathname !== '/' &&
+      !request.nextUrl.pathname.endsWith('.mq5')
     ) {
       const url = request.nextUrl.clone();
       url.pathname = '/login';
@@ -142,6 +143,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|mq5)$).*)',
   ],
 };
