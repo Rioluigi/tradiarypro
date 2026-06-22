@@ -386,6 +386,7 @@ export default function WebhookConfigClient({
       if (error) throw error;
 
       setFormSuccess('Account added successfully!');
+      await supabase.auth.refreshSession();
       setAccountNumber('');
       setBroker('');
       setLabel('');
