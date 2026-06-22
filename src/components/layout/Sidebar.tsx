@@ -81,12 +81,54 @@ export default function Sidebar({ userEmail, subscriptionPlan = 'free' }: Sideba
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
+    
+    // Clear Supabase auth tokens from localStorage and cookies immediately
+    const clearAuthLocalData = () => {
+      if (typeof window !== 'undefined') {
+        try {
+          // Clear localStorage items containing Supabase session tokens
+          for (let i = localStorage.length - 1; i >= 0; i--) {
+            const key = localStorage.key(i);
+            if (key && (key.includes('sb-') || key.includes('supabase.auth'))) {
+              localStorage.removeItem(key);
+            }
+          }
+          sessionStorage.clear();
+
+          // Expire cookies manually
+          document.cookie.split(";").forEach((c) => {
+            const trimmed = c.trim();
+            const eqPos = trimmed.indexOf("=");
+            const name = eqPos > -1 ? trimmed.substring(0, eqPos) : trimmed;
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;`;
+          });
+        } catch (e) {
+          console.error('Failed to manually clear auth local storage:', e);
+        }
+      }
+    };
+
+    // Instantly clear local auth data so middleware doesn't redirect back to dashboard
+    clearAuthLocalData();
+
+    // Optimistic UI: Redirect immediately
+    router.push('/login');
+
+    // Run supabase.auth.signOut() in background with 3s timeout
     try {
       const supabase = createClient();
-      await supabase.auth.signOut();
-      router.push('/login');
-    } catch {
-      setIsSigningOut(false);
+      Promise.race([
+        supabase.auth.signOut(),
+        new Promise((resolve) => setTimeout(resolve, 3000))
+      ]).then(() => {
+        router.refresh();
+      }).catch((err) => {
+        console.error('Background sign out error:', err);
+        router.refresh();
+      });
+    } catch (err) {
+      console.error('Sign out error:', err);
+      router.refresh();
     }
   };
 
