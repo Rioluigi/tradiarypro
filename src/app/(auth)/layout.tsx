@@ -25,9 +25,9 @@ export default function AuthLayout({
         />
       </div>
 
-      <div className="relative z-10 w-full">
+      <main className="relative z-10 w-full">
         {children}
-      </div>
+      </main>
     </div>
   );
 }

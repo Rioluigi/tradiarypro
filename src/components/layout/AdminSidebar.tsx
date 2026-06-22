@@ -214,10 +214,11 @@ export default function AdminSidebar({ userEmail }: AdminSidebarProps) {
           onClick={toggleTheme}
           className={cn(
             'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium',
-            'text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition-all duration-200',
+            'text-slate-450 hover:text-slate-200 hover:bg-slate-800/80 transition-all duration-200',
             collapsed && 'justify-center'
           )}
           title={collapsed ? (theme === 'dark' ? 'Light Mode' : 'Dark Mode') : undefined}
+          aria-label={theme === 'dark' ? 'Ubah ke mode terang' : 'Ubah ke mode gelap'}
         >
           {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           {!collapsed && (
@@ -248,6 +249,7 @@ export default function AdminSidebar({ userEmail }: AdminSidebarProps) {
             collapsed && 'justify-center'
           )}
           title={collapsed ? 'Sign Out' : undefined}
+          aria-label="Keluar log"
         >
           {isSigningOut ? (
             <Loader2 className="w-5 h-5 animate-spin" />
@@ -268,6 +270,7 @@ export default function AdminSidebar({ userEmail }: AdminSidebarProps) {
       <button
         onClick={() => setMobileOpen(!mobileOpen)}
         className="lg:hidden fixed top-4 left-4 z-50 p-2.5 rounded-xl bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 text-slate-400 hover:text-white transition-colors"
+        aria-label="Buka menu navigasi"
       >
         {mobileOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
@@ -277,6 +280,7 @@ export default function AdminSidebar({ userEmail }: AdminSidebarProps) {
         onClick={() => router.push('/dashboard')}
         className="lg:hidden fixed top-4 left-16 z-50 p-2.5 rounded-xl bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 text-slate-400 hover:text-white transition-colors"
         title="Back to Dashboard"
+        aria-label="Kembali ke dashboard"
       >
         <ArrowLeft size={20} />
       </button>
@@ -287,6 +291,7 @@ export default function AdminSidebar({ userEmail }: AdminSidebarProps) {
         disabled={isSigningOut}
         className="lg:hidden fixed top-4 right-16 z-50 p-2.5 rounded-xl bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
         title="Sign Out"
+        aria-label="Keluar log"
       >
         {isSigningOut ? <Loader2 size={20} className="animate-spin" /> : <LogOut size={20} />}
       </button>
@@ -325,6 +330,7 @@ export default function AdminSidebar({ userEmail }: AdminSidebarProps) {
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-slate-800 border border-slate-700/50 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 transition-all duration-200 shadow-lg"
+          aria-label={collapsed ? "Buka bilah samping" : "Sembunyikan bilah samping"}
         >
           {collapsed ? (
             <ChevronRight size={14} />

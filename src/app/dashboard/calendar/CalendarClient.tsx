@@ -260,6 +260,7 @@ export default function CalendarClient({ trades, userId }: CalendarClientProps) 
               onClick={handlePrevMonth}
               className="p-2 rounded-xl bg-slate-800 border border-slate-700/50 hover:bg-slate-700 text-slate-400 hover:text-white transition-all"
               title="Previous Month"
+              aria-label="Bulan sebelumnya"
             >
               <ChevronLeft size={18} />
             </button>
@@ -273,6 +274,7 @@ export default function CalendarClient({ trades, userId }: CalendarClientProps) 
               onClick={handleNextMonth}
               className="p-2 rounded-xl bg-slate-800 border border-slate-700/50 hover:bg-slate-700 text-slate-400 hover:text-white transition-all"
               title="Next Month"
+              aria-label="Bulan berikutnya"
             >
               <ChevronRight size={18} />
             </button>
@@ -430,6 +432,7 @@ export default function CalendarClient({ trades, userId }: CalendarClientProps) 
               <button
                 onClick={() => setSelectedDateStr(null)}
                 className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/30 text-slate-400 hover:text-white transition-colors"
+                aria-label="Tutup modal"
               >
                 <X size={16} />
               </button>

@@ -285,6 +285,7 @@ export default function Sidebar({ userEmail, subscriptionPlan = 'free' }: Sideba
             collapsed && 'justify-center'
           )}
           title={collapsed ? (theme === 'dark' ? 'Light Mode' : 'Dark Mode') : undefined}
+          aria-label={theme === 'dark' ? 'Ubah ke mode terang' : 'Ubah ke mode gelap'}
         >
           {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           {!collapsed && (
@@ -315,6 +316,7 @@ export default function Sidebar({ userEmail, subscriptionPlan = 'free' }: Sideba
             collapsed && 'justify-center'
           )}
           title={collapsed ? 'Sign Out' : undefined}
+          aria-label="Keluar log"
         >
           {isSigningOut ? (
             <Loader2 className="w-5 h-5 animate-spin" />
@@ -335,6 +337,7 @@ export default function Sidebar({ userEmail, subscriptionPlan = 'free' }: Sideba
       <button
         onClick={() => setMobileOpen(!mobileOpen)}
         className="lg:hidden fixed top-4 left-4 z-50 p-2.5 rounded-xl bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 text-slate-400 hover:text-white transition-colors mobile-sidebar-toggle"
+        aria-label="Buka menu navigasi"
       >
         {mobileOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
@@ -345,6 +348,7 @@ export default function Sidebar({ userEmail, subscriptionPlan = 'free' }: Sideba
         disabled={isSigningOut}
         className="lg:hidden fixed top-4 right-4 z-50 p-2.5 rounded-xl bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50 mobile-signout-btn"
         title="Sign Out"
+        aria-label="Keluar log"
       >
         {isSigningOut ? <Loader2 size={20} className="animate-spin" /> : <LogOut size={20} />}
       </button>
@@ -384,6 +388,7 @@ export default function Sidebar({ userEmail, subscriptionPlan = 'free' }: Sideba
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-slate-800 border border-slate-700/50 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 transition-all duration-200 shadow-lg"
+          aria-label={collapsed ? "Buka bilah samping" : "Sembunyikan bilah samping"}
         >
           {collapsed ? (
             <ChevronRight size={14} />

@@ -29,9 +29,11 @@ export default async function PlanOnboardingPage() {
   }
 
   return (
-    <PlanOnboardingClient
-      userId={user.id}
-      userEmail={user.email || ''}
-    />
+    <main>
+      <PlanOnboardingClient
+        userId={user.id}
+        userEmail={user.email || ''}
+      />
+    </main>
   );
 }

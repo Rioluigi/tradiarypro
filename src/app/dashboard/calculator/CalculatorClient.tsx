@@ -304,6 +304,7 @@ export default function CalculatorClient() {
                 onClick={handleDeletePreset}
                 className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 transition-all"
                 title="Delete active preset"
+                aria-label="Hapus preset aktif"
               >
                 <Trash2 size={16} />
               </button>

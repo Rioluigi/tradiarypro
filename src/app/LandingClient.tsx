@@ -182,6 +182,7 @@ export default function LandingClient({ cmsContent }: LandingClientProps) {
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="md:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors"
+            aria-label="Toggle mobile menu"
           >
             {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
@@ -232,8 +233,9 @@ export default function LandingClient({ cmsContent }: LandingClientProps) {
         )}
       </nav>
 
-      {/* ─── HERO SECTION ─── */}
-      <section className="pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden relative">
+      <main>
+        {/* ─── HERO SECTION ─── */}
+        <section className="pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden relative">
         {/* Decorative background lights */}
         <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full blur-3xl opacity-20 pointer-events-none"
           style={{ background: 'radial-gradient(circle, rgba(79, 70, 229, 0.2) 0%, transparent 70%)' }}
@@ -804,6 +806,7 @@ export default function LandingClient({ cmsContent }: LandingClientProps) {
           </Link>
         </div>
       </section>
+      </main>
 
       {/* ─── FOOTER ─── */}
       <footer className="bg-slate-950 text-slate-400 py-12 md:py-16 border-t border-slate-900 select-none">

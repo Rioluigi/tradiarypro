@@ -97,8 +97,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       root.style.setProperty('--border', '#e4e4e7');
       root.style.setProperty('--border-subtle', 'rgba(228, 228, 231, 0.5)');
       root.style.setProperty('--text-primary', '#09090b');
-      root.style.setProperty('--text-secondary', '#71717a');
-      root.style.setProperty('--text-muted', '#a1a1aa');
+      root.style.setProperty('--text-secondary', '#4b5563');
+      root.style.setProperty('--text-muted', '#6b7280');
     } else {
       root.classList.remove('light');
       root.classList.add('dark');
@@ -109,8 +109,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       root.style.setProperty('--border', '#1c1c1e');
       root.style.setProperty('--border-subtle', 'rgba(28, 28, 30, 0.5)');
       root.style.setProperty('--text-primary', '#fafafa');
-      root.style.setProperty('--text-secondary', '#a1a1aa');
-      root.style.setProperty('--text-muted', '#52525b');
+      root.style.setProperty('--text-secondary', '#cbd5e1');
+      root.style.setProperty('--text-muted', '#94a3b8');
     }
 
     const colors = ACCENT_COLORS[accentColor] || ACCENT_COLORS.purple;

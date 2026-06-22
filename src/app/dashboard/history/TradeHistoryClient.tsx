@@ -1128,6 +1128,7 @@ export default function TradeHistoryClient({
                           onClick={() => handleAIReview(trade)}
                           className="p-2 rounded-xl bg-purple-500/10 border border-purple-500/20 hover:border-purple-500/40 text-purple-400 hover:bg-purple-500/20 transition-all duration-200"
                           title="AI Review"
+                          aria-label="Review transaksi dengan AI"
                         >
                           <Brain size={14} />
                         </button>
@@ -1142,6 +1143,7 @@ export default function TradeHistoryClient({
                                 : 'bg-slate-700/30 border-slate-700/50 text-slate-400 hover:bg-slate-700/50 hover:text-slate-200'
                             )}
                             title="Open Journal"
+                            aria-label="Buka jurnal transaksi"
                           >
                             <BookOpen size={14} />
                           </button>
@@ -1196,6 +1198,7 @@ export default function TradeHistoryClient({
                           onClick={() => setTradeToDelete(trade)}
                           className="p-2 rounded-xl bg-red-500/10 border border-red-500/20 hover:border-red-500/40 text-red-450 hover:bg-red-500/20 transition-all duration-200"
                           title="Delete Trade"
+                          aria-label="Hapus transaksi"
                         >
                           <Trash2 size={14} />
                         </button>
@@ -1397,6 +1400,7 @@ export default function TradeHistoryClient({
                       onClick={() => setLightboxUrl(journalFileUrl)}
                       className="absolute bottom-2 right-2 p-1.5 rounded-lg bg-slate-950/80 border border-slate-800 text-slate-400 hover:text-white hover:scale-105 transition-all z-10"
                       title="Zoom screenshot"
+                      aria-label="Perbesar gambar tangkapan layar"
                     >
                       <Maximize2 size={12} />
                     </button>
@@ -1527,6 +1531,7 @@ export default function TradeHistoryClient({
             onClick={() => setLightboxUrl(null)}
             className="absolute top-6 right-6 p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition-all z-10"
             title="Close Zoom"
+            aria-label="Tutup zoom gambar"
           >
             <X size={20} />
           </button>

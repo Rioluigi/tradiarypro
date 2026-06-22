@@ -292,6 +292,7 @@ export default function DashboardClient({
             }}
             className="absolute top-3 right-3 p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 transition-colors"
             title="Dismiss"
+            aria-label="Tutup banner"
           >
             <X size={16} />
           </button>

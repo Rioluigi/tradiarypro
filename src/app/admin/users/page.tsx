@@ -399,6 +399,7 @@ export default function ManageUsers() {
                           <Link
                             href={`/admin/trades?email=${profile.email}`}
                             title="Monitor user trades"
+                            aria-label="Monitor transaksi pengguna"
                             className="p-2 rounded-xl bg-slate-800/50 border border-slate-700/50 hover:border-purple-500/40 text-purple-400 hover:bg-purple-500/10 transition-all duration-200"
                           >
                             <Eye size={14} />
@@ -409,6 +410,7 @@ export default function ManageUsers() {
                             onClick={() => handleSendSummary(profile)}
                             disabled={emailLoadingId === profile.id || isActionLoading}
                             title="Send Summary Email"
+                            aria-label="Kirim email ringkasan"
                             className="p-2 rounded-xl bg-slate-800/50 border border-slate-700/50 hover:border-purple-500/40 text-purple-400 hover:bg-purple-500/10 transition-all duration-200"
                           >
                             {emailLoadingId === profile.id ? (
@@ -423,6 +425,7 @@ export default function ManageUsers() {
                             onClick={() => toggleRole(profile)}
                             disabled={isSelf || isActionLoading}
                             title={isSelf ? "You cannot demote yourself" : "Change User Role"}
+                            aria-label={isSelf ? "Anda tidak dapat menurunkan peran Anda sendiri" : "Ubah peran pengguna"}
                             className={`p-2 rounded-xl border text-xs font-semibold transition-all duration-200 ${
                               isSelf
                                 ? 'opacity-30 cursor-not-allowed border-slate-800 text-slate-650'
@@ -437,6 +440,7 @@ export default function ManageUsers() {
                             onClick={() => toggleActive(profile)}
                             disabled={isSelf || isActionLoading}
                             title={isSelf ? "You cannot block yourself" : profile.is_active ? "Block Account" : "Unblock Account"}
+                            aria-label={isSelf ? "Anda tidak dapat memblokir diri sendiri" : profile.is_active ? "Blokir akun" : "Buka blokir akun"}
                             className={`p-2 rounded-xl border text-xs font-semibold transition-all duration-200 flex items-center justify-center min-w-[70px] ${
                               isSelf
                                 ? 'opacity-30 cursor-not-allowed border-slate-800 text-slate-650'

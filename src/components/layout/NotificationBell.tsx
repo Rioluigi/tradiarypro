@@ -243,6 +243,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
           isOpen && "bg-slate-750 text-white border-slate-650"
         )}
         title="Notifications"
+        aria-label="Notifikasi"
       >
         <Bell size={20} className={cn(unreadCount > 0 && "animate-swing origin-top")} />
         

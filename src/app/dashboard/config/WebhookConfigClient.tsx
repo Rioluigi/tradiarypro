@@ -898,6 +898,7 @@ export default function WebhookConfigClient({
                               onClick={() => copyToClipboard(account.id, 'account')}
                               className="text-slate-500 hover:text-slate-300 transition-colors p-1"
                               title="Copy Account ID"
+                              aria-label="Salin ID Akun"
                             >
                               {copiedAccountId === account.id ? (
                                 <Check size={12} className="text-emerald-400" />
@@ -913,6 +914,7 @@ export default function WebhookConfigClient({
                           onClick={() => handleDeleteAccount(account.id)}
                           className="p-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-colors flex-shrink-0"
                           title="Delete Account"
+                          aria-label="Hapus Akun"
                         >
                           <Trash2 size={16} />
                         </button>

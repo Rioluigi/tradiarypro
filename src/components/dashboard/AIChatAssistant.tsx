@@ -318,6 +318,7 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
             : "bg-[#7c3aed] border border-purple-500 hover:bg-purple-500 shadow-purple-600/30 hover:shadow-purple-600/40"
         )}
         title="Tradiary AI Assistant"
+        aria-label="Buka chat AI assistant"
       >
         {isOpen ? <X size={20} /> : <Bot size={20} className="animate-pulse" />}
       </button>
@@ -355,6 +356,7 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
           <button
             onClick={() => setIsOpen(false)}
             className="p-1.5 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+            aria-label="Tutup chat AI assistant"
           >
             <X size={16} />
           </button>

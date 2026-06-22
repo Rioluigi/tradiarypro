@@ -37,11 +37,13 @@ export default async function PricingPage() {
   }
 
   return (
-    <PricingClient
-      userId={userId}
-      userEmail={userEmail}
-      currentPlan={currentPlan}
-      cmsData={cmsData || undefined}
-    />
+    <main>
+      <PricingClient
+        userId={userId}
+        userEmail={userEmail}
+        currentPlan={currentPlan}
+        cmsData={cmsData || undefined}
+      />
+    </main>
   );
 }
