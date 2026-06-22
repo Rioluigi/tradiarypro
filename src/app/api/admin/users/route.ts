@@ -49,29 +49,65 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    // 2. Fetch all user profiles using admin client
-    const { data: profiles, error: profilesErr } = await supabaseAdmin
+    // 2. Parse pagination & search params
+    const { searchParams } = new URL(request.url);
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '10', 10)));
+    const search = (searchParams.get('search') || '').trim();
+    const offset = (page - 1) * limit;
+
+    // 3. Build profiles query with optional search filter
+    let countQuery = supabaseAdmin
+      .from('profiles')
+      .select('id', { count: 'exact', head: true });
+
+    let dataQuery = supabaseAdmin
       .from('profiles')
       .select('id, email, role, is_active, created_at, subscription_plan')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
 
-    if (profilesErr) throw profilesErr;
+    if (search) {
+      countQuery = countQuery.ilike('email', `%${search}%`);
+      dataQuery = dataQuery.ilike('email', `%${search}%`);
+    }
 
-    // 3. Fetch trade counts using admin client
-    const { data: trades, error: tradesErr } = await supabaseAdmin
-      .from('trades')
-      .select('user_id');
+    // Execute count and data queries in parallel
+    const [countResult, dataResult] = await Promise.all([
+      countQuery,
+      dataQuery,
+    ]);
 
+    if (countResult.error) throw countResult.error;
+    if (dataResult.error) throw dataResult.error;
+
+    const totalCount = countResult.count || 0;
+    const profiles = dataResult.data || [];
+
+    // 4. Fetch trade counts ONLY for users on the current page (efficient batch)
     const tradeCounts: { [userId: string]: number } = {};
-    if (!tradesErr && trades) {
-      trades.forEach((t) => {
-        tradeCounts[t.user_id] = (tradeCounts[t.user_id] || 0) + 1;
-      });
+    if (profiles.length > 0) {
+      const userIds = profiles.map((p) => p.id);
+      
+      // Fetch trade user_ids filtered to only current page's users
+      const { data: trades, error: tradesErr } = await supabaseAdmin
+        .from('trades')
+        .select('user_id')
+        .in('user_id', userIds);
+
+      if (!tradesErr && trades) {
+        trades.forEach((t) => {
+          tradeCounts[t.user_id] = (tradeCounts[t.user_id] || 0) + 1;
+        });
+      }
     }
 
     return NextResponse.json({
-      profiles: profiles || [],
+      profiles,
       tradeCounts,
+      totalCount,
+      page,
+      limit,
     });
   } catch (error) {
     console.error('[Admin Users API GET] Uncaught Exception:', error);

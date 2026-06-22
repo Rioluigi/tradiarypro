@@ -54,9 +54,10 @@ export default function KPICard({
         <div className="flex items-center justify-between mb-4">
           <p className="text-sm font-medium text-slate-400">{title}</p>
           <div 
-            className="w-10 h-10 rounded-xl bg-slate-700/50 flex items-center justify-center text-slate-400 transition-colors duration-300"
+            className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors duration-300"
             style={{
-              // Apply hover styles using CSS variable via Tailwind or inline
+              backgroundColor: 'var(--accent-dim)',
+              color: 'var(--accent)',
             }}
           >
             {icon}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import {
@@ -25,6 +25,7 @@ interface Profile {
 
 export default function ManageUsers() {
   const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   // Data
@@ -33,6 +34,36 @@ export default function ManageUsers() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [emailLoadingId, setEmailLoadingId] = useState<string | null>(null);
+
+  // Server-side Pagination & Search
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(totalCount / itemsPerPage);
+
+  // Debounce timer ref
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const supabase = createClient();
+
+  // Debounce search input (300ms)
+  useEffect(() => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setCurrentPage(1); // Reset to page 1 on new search
+    }, 300);
+
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, [searchQuery]);
 
   const handleSendSummary = async (profile: Profile) => {
     try {
@@ -60,33 +91,39 @@ export default function ManageUsers() {
     }
   };
 
-
-  // Filters & Pagination
-  const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-
-  const supabase = createClient();
-
-  // Load user data and trade counts
-  const loadData = useCallback(async () => {
+  // Load user data with server-side pagination
+  const loadData = useCallback(async (page: number, search: string, isInitial: boolean = false) => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
       controller.abort();
     }, 15000); // 15 seconds timeout fallback
 
     try {
-      setLoading(true);
+      if (isInitial) {
+        setLoading(true);
+      } else {
+        setPageLoading(true);
+      }
       setError(null);
 
-      // Get logged in user ID for safety check
-      const { data: { user }, error: authErr } = await supabase.auth.getUser();
-      if (authErr) throw authErr;
-      if (user) {
-        setCurrentUserId(user.id);
+      // Get logged in user ID for safety check (only on initial load)
+      if (isInitial) {
+        const { data: { user }, error: authErr } = await supabase.auth.getUser();
+        if (authErr) throw authErr;
+        if (user) {
+          setCurrentUserId(user.id);
+        }
       }
 
-      const res = await fetch('/api/admin/users', {
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(itemsPerPage),
+      });
+      if (search) {
+        params.set('search', search);
+      }
+
+      const res = await fetch(`/api/admin/users?${params.toString()}`, {
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
@@ -99,6 +136,7 @@ export default function ManageUsers() {
       const data = await res.json();
       setProfiles(data.profiles || []);
       setTradeCounts(data.tradeCounts || {});
+      setTotalCount(data.totalCount || 0);
     } catch (err: unknown) {
       console.error('Error fetching users:', err);
       let errMsg = 'Failed to load user management data';
@@ -112,12 +150,32 @@ export default function ManageUsers() {
       setError(errMsg);
     } finally {
       setLoading(false);
+      setPageLoading(false);
     }
   }, [supabase]);
 
+  // Initial load
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    loadData(1, '', true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Fetch when page or debounced search changes (skip initial)
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    loadData(currentPage, debouncedSearch);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, debouncedSearch]);
+
+  // Handle page change
+  const goToPage = (page: number) => {
+    if (page < 1 || page > totalPages || page === currentPage) return;
+    setCurrentPage(page);
+  };
 
   // Handle role promote/demote toggle using secure API route
   const toggleRole = async (profile: Profile) => {
@@ -183,22 +241,6 @@ export default function ManageUsers() {
     }
   };
 
-  // Filter profiles based on search
-  const filteredProfiles = useMemo(() => {
-    setCurrentPage(1); // Reset page on filter update
-    return profiles.filter((p) =>
-      p.email.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [profiles, searchQuery]);
-
-  // Paginated Profiles
-  const paginatedProfiles = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return filteredProfiles.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredProfiles, currentPage]);
-
-  const totalPages = Math.ceil(filteredProfiles.length / itemsPerPage);
-
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
@@ -216,6 +258,15 @@ export default function ManageUsers() {
         </div>
         <h2 className="text-lg font-semibold text-white">Migration Error or Permission Issue</h2>
         <p className="text-slate-400 text-sm leading-relaxed">{error}</p>
+        <button
+          onClick={() => {
+            setError(null);
+            loadData(currentPage, debouncedSearch, true);
+          }}
+          className="mt-2 px-4 py-2 rounded-xl bg-purple-500/20 border border-purple-500/30 text-purple-400 text-sm font-semibold hover:bg-purple-500/30 transition-colors"
+        >
+          Retry
+        </button>
       </div>
     );
   }
@@ -247,7 +298,14 @@ export default function ManageUsers() {
       </div>
 
       {/* Users Table Card */}
-      <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl">
+      <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl relative">
+        {/* Page transition loading overlay */}
+        {pageLoading && (
+          <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm z-10 flex items-center justify-center">
+            <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
+          </div>
+        )}
+
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -262,14 +320,14 @@ export default function ManageUsers() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-850/30">
-              {paginatedProfiles.length === 0 ? (
+              {profiles.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-12 text-center text-slate-500 text-sm">
                     No users found matching your search.
                   </td>
                 </tr>
               ) : (
-                paginatedProfiles.map((profile) => {
+                profiles.map((profile) => {
                   const isSelf = profile.id === currentUserId;
                   const count = tradeCounts[profile.id] || 0;
                   const isActionLoading = actionLoadingId === profile.id;
@@ -409,20 +467,20 @@ export default function ManageUsers() {
         {totalPages > 1 && (
           <div className="px-6 py-4 border-t border-slate-850 bg-slate-900/40 flex items-center justify-between">
             <span className="text-xs text-slate-500">
-              Showing Page {currentPage} of {totalPages} ({filteredProfiles.length} total users)
+              Showing Page {currentPage} of {totalPages} ({totalCount} total users)
             </span>
             <div className="flex gap-2">
               <button
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                disabled={currentPage === 1 || pageLoading}
+                onClick={() => goToPage(currentPage - 1)}
                 className="px-3 py-1.5 rounded-lg bg-slate-800 text-xs font-semibold text-slate-200 border border-slate-700/50 hover:bg-slate-750 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronLeft size={14} className="inline mr-1" />
                 Previous
               </button>
               <button
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                disabled={currentPage === totalPages || pageLoading}
+                onClick={() => goToPage(currentPage + 1)}
                 className="px-3 py-1.5 rounded-lg bg-slate-800 text-xs font-semibold text-slate-200 border border-slate-700/50 hover:bg-slate-750 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 Next

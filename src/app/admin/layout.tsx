@@ -15,18 +15,7 @@ export default async function AdminLayout({
 
   return (
     <div 
-      className="min-h-screen text-slate-100 selection:bg-purple-500/30 selection:text-purple-200 themed-app relative"
-      style={{
-        backgroundColor: '#0d0d1a',
-        // Inline variable overrides to control themed-app children styles dynamically
-        '--bg-primary': '#0d0d1a',
-        '--bg-card': '#121226',
-        '--border': 'rgba(124, 58, 237, 0.15)',
-        '--accent': '#7c3aed',
-        '--accent-dim': 'rgba(124, 58, 237, 0.1)',
-        '--accent-border': 'rgba(124, 58, 237, 0.3)',
-        '--accent-glow': 'rgba(124, 58, 237, 0.2)',
-      } as React.CSSProperties}
+      className="min-h-screen themed-app relative"
     >
       <AdminSidebar userEmail={user?.email} />
 

@@ -549,28 +549,29 @@ body,
 /* Free Plan Box & Upgrade Buttons */
 .dark .themed-app aside.sidebar-glass [class*="border-indigo-"],
 .dark .themed-app aside.sidebar-glass-mobile [class*="border-indigo-"] {
-  border-color: rgba(99, 102, 241, 0.4) !important;
+  border-color: var(--accent-border) !important;
 }
 
 .dark .themed-app aside.sidebar-glass [class*="bg-indigo-"],
 .dark .themed-app aside.sidebar-glass-mobile [class*="bg-indigo-"] {
-  background-color: rgba(99, 102, 241, 0.05) !important;
+  background-color: var(--accent-dim) !important;
 }
 
 .dark .themed-app aside.sidebar-glass [class*="text-indigo-"],
 .dark .themed-app aside.sidebar-glass-mobile [class*="text-indigo-"] {
-  color: #818cf8 !important;
+  color: var(--accent) !important;
 }
 
 .dark .themed-app aside.sidebar-glass button.bg-indigo-600,
 .dark .themed-app aside.sidebar-glass-mobile button.bg-indigo-600 {
-  background-color: #4f46e5 !important;
+  background-color: var(--accent) !important;
   color: #ffffff !important;
 }
 
 .dark .themed-app aside.sidebar-glass button.bg-indigo-600:hover,
 .dark .themed-app aside.sidebar-glass-mobile button.bg-indigo-600:hover {
-  background-color: #4338ca !important;
+  background-color: var(--accent) !important;
+  opacity: 0.9 !important;
 }
 
 /* Mobile menu button toggle */
@@ -596,11 +597,6 @@ body,
   --text-primary: #111827 !important;
   --text-secondary: #6b7280 !important;
   --text-muted: #9ca3af !important;
-  
-  --accent: #7c3aed !important;
-  --accent-dim: rgba(124, 58, 237, 0.08) !important;
-  --accent-border: rgba(124, 58, 237, 0.2) !important;
-  --accent-glow: rgba(124, 58, 237, 0.04) !important;
 
   background-color: var(--bg-primary) !important;
   color: var(--text-primary) !important;
@@ -747,28 +743,29 @@ body,
 }
 
 .light .themed-app aside [class*="text-purple-400"] {
-  color: #7c3aed !important;
+  color: var(--accent) !important;
 }
 
 .light .themed-app aside [class*="text-indigo-400"] {
-  color: #6366f1 !important;
+  color: var(--accent) !important;
 }
 
 .light .themed-app aside [class*="border-indigo-"] {
-  border-color: #ddd6fe !important;
+  border-color: var(--accent-border) !important;
 }
 
 .light .themed-app aside [class*="bg-indigo-50"] {
-  background-color: #f5f3ff !important;
+  background-color: var(--accent-dim) !important;
 }
 
 .light .themed-app aside button.bg-indigo-600 {
-  background-color: #7c3aed !important;
+  background-color: var(--accent) !important;
   color: #ffffff !important;
 }
 
 .light .themed-app aside button.bg-indigo-600:hover {
-  background-color: #6d28d9 !important;
+  background-color: var(--accent) !important;
+  opacity: 0.9 !important;
 }
 
 .light .themed-app aside [class*="border-slate-700"],

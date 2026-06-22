@@ -56,7 +56,14 @@ export async function GET(request: NextRequest) {
 
     if (profilesErr) throw profilesErr;
 
-    // 3. Fetch trades
+    // 3. Fetch accounts (for currency information per trade)
+    const { data: accounts, error: accountsErr } = await supabaseAdmin
+      .from('accounts')
+      .select('id, user_id, currency');
+
+    if (accountsErr) throw accountsErr;
+
+    // 4. Fetch trades
     const { data: trades, error: tradesErr } = await supabaseAdmin
       .from('trades')
       .select('*')
@@ -66,6 +73,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       profiles: profiles || [],
+      accounts: accounts || [],
       trades: trades || [],
     });
   } catch (error) {
