@@ -62,30 +62,69 @@ export async function POST(request: NextRequest) {
     }
 
     const genAI = new GoogleGenerativeAI(geminiApiKey);
+
+    const systemInstruction = 
+      'Kamu adalah Tradiary AI Assistant, asisten trading dan customer service resmi untuk platform Tradiary.\n' +
+      'Kamu memiliki pengetahuan lengkap tentang fitur-fitur Tradiary berikut ini. SELALU jawab berdasarkan daftar fitur ini dan JANGAN pernah mengatakan suatu fitur tidak tersedia jika ada dalam daftar berikut:\n' +
+      '- **Dashboard**: Menyajikan gambaran umum statistik trading (overview stats) dan grafik kurva ekuitas (equity curve).\n' +
+      '- **Trade History (Riwayat Transaksi)**: Dilengkapi fitur penyaringan (filter), ekspor data ke format CSV dan PDF, serta fitur hapus transaksi (delete trade) dengan modal konfirmasi keamanan.\n' +
+      '- **Analytics (Analisis)**: Menyediakan grafik performa trading serta wawasan analisis bertenaga AI (AI Trading Insights).\n' +
+      '- **Calculator (Kalkulator Risiko)**: Membantu perhitungan ukuran posisi dan manajemen risiko (risk calculator).\n' +
+      '- **Calendar (Kalender Trading)**: Visualisasi kalender harian untuk melacak aktivitas dan performa trading dari waktu ke waktu.\n' +
+      '- **Trading Journal AI**: Pencatatan harian jurnal trading (journal notes, strategy tag, rating, screenshot chart) disertai feedback analisis AI otomatis.\n' +
+      '- **Notifikasi In-App**: Pemberitahuan langsung di dalam aplikasi (seperti alert penambahan trade baru, pencapaian keuntungan besar / big win, dan alert rasio kemenangan / win rate alert).\n' +
+      '- **Multi-Currency Support**: Mendukung berbagai mata uang akun secara dinamis (USD, IDR, EUR, GBP, JPY, AUD, CAD, CHF, SGD, MYR) dengan konversi kurs real-time.\n' +
+      '- **Admin Panel**: Akses eksklusif untuk administrator untuk mengelola pengguna (manage users), memantau transaksi platform (monitor trades dengan breakdown mata uang), dan mempublikasikan teks/konten via CMS Editor.\n\n' +
+      'Aturan Penting:\n' +
+      '1. Jawab HANYA pertanyaan seputar fitur Tradiary, analisis/strategi trading, manajemen risiko, psikologi trading, dan edukasi umum trading (forex, saham, crypto).\n' +
+      '2. Tolak dengan sopan pertanyaan di luar topik tersebut dan arahkan kembali ke topik trading/Tradiary.\n' +
+      '3. SELALU jawab dalam Bahasa Indonesia yang profesional, ramah, singkat, jelas, dan actionable.';
+
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.5-flash-lite',
-      systemInstruction: 'Kamu adalah Tradiary AI Assistant, customer service dan asisten trading resmi Tradiary. Kamu HANYA boleh menjawab pertanyaan seputar:\n1. Fitur dan cara penggunaan Tradiary\n2. Analisis dan strategi trading\n3. Manajemen risiko dan psikologi trading\n4. Pertanyaan umum tentang trading forex, saham, crypto\n\nJika ditanya diluar topik tersebut, tolak dengan sopan dan arahkan kembali ke topik trading atau fitur Tradiary.\nJawab dalam Bahasa Indonesia. Singkat, jelas, dan actionable.',
+      systemInstruction: systemInstruction,
     });
-
+ 
     // 3. Format history for startChat (excluding the latest user message)
     // Gemini startChat history expects format: { role: 'user' | 'model', parts: [{ text: string }] }[]
     const history = cleanMessages.slice(0, cleanMessages.length - 1).map((m) => ({
       role: m.role === 'user' ? 'user' as const : 'model' as const,
       parts: m.parts,
     }));
-
+ 
     const lastMessage = cleanMessages[cleanMessages.length - 1].parts[0].text;
-
+ 
     // 4. Start chat session and send message
     const chat = model.startChat({ history });
     const result = await chat.sendMessage(lastMessage);
     const responseText = result.response.text();
-
+ 
     return NextResponse.json({ text: responseText });
-
+ 
   } catch (err: unknown) {
-    const errMsg = err instanceof Error ? err.message : 'Internal Server Error';
     console.error('[AI Chat API] Unexpected error:', err);
-    return NextResponse.json({ error: errMsg }, { status: 500 });
+    
+    let friendlyMessage = 'Maaf, terjadi kendala teknis. Tim kami akan segera memperbaikinya.';
+    let isServiceUnavailable = false;
+
+    if (err instanceof Error) {
+      const msg = err.message.toLowerCase();
+      // Detect 503 Service Unavailable, overloaded, or typical timeout/gateway errors
+      if (
+        msg.includes('503') || 
+        msg.includes('service unavailable') || 
+        msg.includes('overload') || 
+        msg.includes('timeout') || 
+        msg.includes('deadline exceeded')
+      ) {
+        isServiceUnavailable = true;
+      }
+    }
+
+    if (isServiceUnavailable) {
+      friendlyMessage = 'Maaf, asisten AI sedang mengalami gangguan sementara. Silakan coba lagi dalam beberapa saat. Jika masalah berlanjut, Anda tetap bisa mengakses semua fitur trading journal seperti biasa.';
+    }
+
+    return NextResponse.json({ error: friendlyMessage }, { status: isServiceUnavailable ? 503 : 500 });
   }
 }

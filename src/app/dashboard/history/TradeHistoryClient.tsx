@@ -249,15 +249,30 @@ export default function TradeHistoryClient({
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || 'Gagal me-review transaksi.');
-        setSelectedTradeForAI(null);
-        return;
+        throw new Error(data.error || 'Maaf, terjadi kendala teknis. Tim kami akan segera memperbaikinya.');
       }
       setAiReview(data);
     } catch (err: unknown) {
-      const errMsg = err instanceof Error ? err.message : 'Terjadi kesalahan';
       console.error('Error fetching AI trade review:', err);
-      alert(`Gagal me-review transaksi: ${errMsg}`);
+      let errMsg = 'Maaf, terjadi kendala teknis. Tim kami akan segera memperbaikinya.';
+      if (err instanceof Error) {
+        const msg = err.message;
+        if (msg.includes('gangguan sementara') || msg.includes('kendala teknis')) {
+          errMsg = msg;
+        } else {
+          const lower = msg.toLowerCase();
+          if (
+            lower.includes('503') ||
+            lower.includes('service unavailable') ||
+            lower.includes('overload') ||
+            lower.includes('timeout') ||
+            lower.includes('deadline exceeded')
+          ) {
+            errMsg = 'Maaf, asisten AI sedang mengalami gangguan sementara. Silakan coba lagi dalam beberapa saat. Jika masalah berlanjut, Anda tetap bisa mengakses semua fitur trading journal seperti biasa.';
+          }
+        }
+      }
+      alert(errMsg);
       setSelectedTradeForAI(null);
     } finally {
       setIsReviewing(false);

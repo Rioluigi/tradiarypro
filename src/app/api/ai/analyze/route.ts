@@ -230,8 +230,28 @@ Format keluaran Anda dalam Markdown polos dengan struktur/bagian yang jelas:
     return NextResponse.json({ error: 'Invalid analysis type' }, { status: 400 });
 
   } catch (err: unknown) {
-    const errMsg = err instanceof Error ? err.message : 'Internal Server Error';
     console.error('[AI API] Unexpected error:', err);
-    return NextResponse.json({ error: errMsg }, { status: 500 });
+    
+    let friendlyMessage = 'Maaf, terjadi kendala teknis. Tim kami akan segera memperbaikinya.';
+    let isServiceUnavailable = false;
+
+    if (err instanceof Error) {
+      const msg = err.message.toLowerCase();
+      if (
+        msg.includes('503') || 
+        msg.includes('service unavailable') || 
+        msg.includes('overload') || 
+        msg.includes('timeout') || 
+        msg.includes('deadline exceeded')
+      ) {
+        isServiceUnavailable = true;
+      }
+    }
+
+    if (isServiceUnavailable) {
+      friendlyMessage = 'Maaf, asisten AI sedang mengalami gangguan sementara. Silakan coba lagi dalam beberapa saat. Jika masalah berlanjut, Anda tetap bisa mengakses semua fitur trading journal seperti biasa.';
+    }
+
+    return NextResponse.json({ error: friendlyMessage }, { status: isServiceUnavailable ? 503 : 500 });
   }
 }

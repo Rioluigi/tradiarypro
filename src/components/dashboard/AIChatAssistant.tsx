@@ -133,10 +133,28 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
 
       setMessages((prev) => [...prev, { role: 'model', text: data.text }]);
     } catch (err: unknown) {
-      const errMsg = err instanceof Error ? err.message : 'Koneksi ke AI terputus.';
+      console.error('[AI Chat Client] Error sending message:', err);
+      let errMsg = 'Maaf, terjadi kendala teknis. Tim kami akan segera memperbaikinya.';
+      if (err instanceof Error) {
+        const msg = err.message;
+        if (msg.includes('gangguan sementara') || msg.includes('kendala teknis')) {
+          errMsg = msg;
+        } else {
+          const lower = msg.toLowerCase();
+          if (
+            lower.includes('503') ||
+            lower.includes('service unavailable') ||
+            lower.includes('overload') ||
+            lower.includes('timeout') ||
+            lower.includes('deadline exceeded')
+          ) {
+            errMsg = 'Maaf, asisten AI sedang mengalami gangguan sementara. Silakan coba lagi dalam beberapa saat. Jika masalah berlanjut, Anda tetap bisa mengakses semua fitur trading journal seperti biasa.';
+          }
+        }
+      }
       setMessages((prev) => [
         ...prev,
-        { role: 'model', text: `Maaf, terjadi kesalahan: ${errMsg}` },
+        { role: 'model', text: errMsg },
       ]);
     } finally {
       setLoading(false);
@@ -162,8 +180,7 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
       console.log('Received journal analysis response:', data);
       
       if (!res.ok) {
-        setJournalError(data.error || 'Terjadi kesalahan saat menghubungi AI.');
-        return;
+        throw new Error(data.error || 'Maaf, terjadi kendala teknis. Tim kami akan segera memperbaikinya.');
       }
       
       const responseText = data.response;
@@ -176,9 +193,26 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
       setJournalInput('');
       fetchPastJournals();
     } catch (err: unknown) {
-      const errMsg = err instanceof Error ? err.message : 'Terjadi kesalahan';
       console.error('Error in journal submission:', err);
-      setJournalError(`Gagal menganalisis jurnal: ${errMsg}`);
+      let errMsg = 'Maaf, terjadi kendala teknis. Tim kami akan segera memperbaikinya.';
+      if (err instanceof Error) {
+        const msg = err.message;
+        if (msg.includes('gangguan sementara') || msg.includes('kendala teknis')) {
+          errMsg = msg;
+        } else {
+          const lower = msg.toLowerCase();
+          if (
+            lower.includes('503') ||
+            lower.includes('service unavailable') ||
+            lower.includes('overload') ||
+            lower.includes('timeout') ||
+            lower.includes('deadline exceeded')
+          ) {
+            errMsg = 'Maaf, asisten AI sedang mengalami gangguan sementara. Silakan coba lagi dalam beberapa saat. Jika masalah berlanjut, Anda tetap bisa mengakses semua fitur trading journal seperti biasa.';
+          }
+        }
+      }
+      setJournalError(errMsg);
     } finally {
       setIsJournalAnalyzing(false);
     }
@@ -243,14 +277,30 @@ export default function AIChatAssistant({ userId }: AIChatAssistantProps) {
       console.log('Received AI insights response:', data);
       
       if (!res.ok) {
-        setInsightError(data.error || 'Gagal mengambil insight AI.');
-        return;
+        throw new Error(data.error || 'Maaf, terjadi kendala teknis. Tim kami akan segera memperbaikinya.');
       }
       setInsights(data);
     } catch (err: unknown) {
-      const errMsg = err instanceof Error ? err.message : 'Terjadi kesalahan';
       console.error('Error fetching AI insights:', err);
-      setInsightError(`Gagal menganalisis trade: ${errMsg}`);
+      let errMsg = 'Maaf, terjadi kendala teknis. Tim kami akan segera memperbaikinya.';
+      if (err instanceof Error) {
+        const msg = err.message;
+        if (msg.includes('gangguan sementara') || msg.includes('kendala teknis')) {
+          errMsg = msg;
+        } else {
+          const lower = msg.toLowerCase();
+          if (
+            lower.includes('503') ||
+            lower.includes('service unavailable') ||
+            lower.includes('overload') ||
+            lower.includes('timeout') ||
+            lower.includes('deadline exceeded')
+          ) {
+            errMsg = 'Maaf, asisten AI sedang mengalami gangguan sementara. Silakan coba lagi dalam beberapa saat. Jika masalah berlanjut, Anda tetap bisa mengakses semua fitur trading journal seperti biasa.';
+          }
+        }
+      }
+      setInsightError(errMsg);
     } finally {
       setIsAnalyzing(false);
     }
