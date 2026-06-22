@@ -67,7 +67,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [loadingProfile, setLoadingProfile] = useState<boolean>(true);
 
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   // Load theme and preferences from localStorage on mount
   useEffect(() => {
