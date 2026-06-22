@@ -170,6 +170,26 @@ export async function POST(request: NextRequest) {
     const tradeData = validation.data!;
     console.log('Attempting to insert trade data into Supabase:', JSON.stringify(tradeData, null, 2));
 
+    // Check if the ticket already exists for this user to prevent duplicate trades
+    const { data: existingTrade, error: checkError } = await supabaseAdmin
+      .from('trades')
+      .select('id')
+      .eq('ticket', tradeData.ticket)
+      .eq('user_id', tradeData.user_id)
+      .maybeSingle();
+
+    if (checkError) {
+      console.error('Error checking for existing trade:', checkError);
+    }
+
+    if (existingTrade) {
+      console.log(`[Duplicate Ignored] duplicate ticket ignored. Trade with ticket ${tradeData.ticket} already exists for user ${tradeData.user_id}.`);
+      return NextResponse.json(
+        { success: true, message: 'duplicate ticket ignored', id: existingTrade.id },
+        { status: 200 }
+      );
+    }
+
     // Insert trade into the database
     const { data, error } = await supabaseAdmin
       .from('trades')
@@ -179,6 +199,14 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('Supabase insert error:', error);
+      // Double check if it failed due to unique constraint in database level
+      if (error.code === '23505') {
+        console.log(`[Duplicate Ignored] database unique constraint triggered: duplicate ticket ignored for ticket ${tradeData.ticket}.`);
+        return NextResponse.json(
+          { success: true, message: 'duplicate ticket ignored' },
+          { status: 200 }
+        );
+      }
       return NextResponse.json(
         {
           error: 'Internal server error',

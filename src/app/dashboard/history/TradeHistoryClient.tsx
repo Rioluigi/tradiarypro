@@ -27,6 +27,7 @@ import {
   Maximize2,
   Brain,
   Sparkles,
+  CheckCircle2,
 } from 'lucide-react';
 import ExportModal from '@/components/dashboard/ExportModal';
 import NotificationBell from '@/components/layout/NotificationBell';
@@ -281,6 +282,11 @@ export default function TradeHistoryClient({
   // Export states
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
+  // Delete states
+  const [tradeToDelete, setTradeToDelete] = useState<Trade | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
   useEffect(() => {
     const fetchUser = async () => {
       const supabase = createClient();
@@ -457,6 +463,41 @@ export default function TradeHistoryClient({
       setSaveError('Failed to save journal. Ensure your database tables are migrated and bucket is active.');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleDeleteTrade = async () => {
+    if (!tradeToDelete) return;
+    setIsDeleting(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('trades')
+        .delete()
+        .eq('id', tradeToDelete.id);
+
+      if (error) throw error;
+
+      // Update local state to instantly reflect delete
+      setLocalTrades((prev) => prev.filter((t) => t.id !== tradeToDelete.id));
+
+      setToast({ message: `Trade #${tradeToDelete.ticket} successfully deleted`, type: 'success' });
+      
+      // Auto clear toast
+      setTimeout(() => {
+        setToast(null);
+      }, 4000);
+
+      // Close modal
+      setTradeToDelete(null);
+    } catch (err) {
+      console.error('Error deleting trade:', err);
+      setToast({ message: 'Failed to delete trade. Please try again.', type: 'error' });
+      setTimeout(() => {
+        setToast(null);
+      }, 4000);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -1134,6 +1175,15 @@ export default function TradeHistoryClient({
                             </div>
                           )}
                         </div>
+
+                        {/* Delete Trade Button */}
+                        <button
+                          onClick={() => setTradeToDelete(trade)}
+                          className="p-2 rounded-xl bg-red-500/10 border border-red-500/20 hover:border-red-500/40 text-red-450 hover:bg-red-500/20 transition-all duration-200"
+                          title="Delete Trade"
+                        >
+                          <Trash2 size={14} />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -1933,6 +1983,83 @@ export default function TradeHistoryClient({
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {tradeToDelete && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+          {/* Backdrop click to close */}
+          <div 
+            className="absolute inset-0 cursor-default" 
+            onClick={() => !isDeleting && setTradeToDelete(null)} 
+          />
+
+          <div className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl z-10 overflow-hidden flex flex-col animate-scale-in">
+            {/* Header */}
+            <div className="flex items-center justify-between p-5 border-b border-slate-800">
+              <h3 className="text-sm font-bold text-slate-100 uppercase tracking-wider flex items-center gap-2">
+                <Trash2 size={16} className="text-red-500" />
+                Hapus Transaksi
+              </h3>
+              {!isDeleting && (
+                <button
+                  onClick={() => setTradeToDelete(null)}
+                  className="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+
+            {/* Body */}
+            <div className="p-6 space-y-3">
+              <p className="text-sm text-slate-350 leading-relaxed">
+                Hapus trade <span className="font-semibold text-white">#{tradeToDelete.ticket}</span> (<span className="font-semibold text-slate-200">{tradeToDelete.symbol}</span>)? Tindakan ini tidak bisa dibatalkan.
+              </p>
+            </div>
+
+            {/* Footer */}
+            <div className="p-5 border-t border-slate-800 bg-slate-900/50 flex justify-end gap-3">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => setTradeToDelete(null)}
+                className="px-4 py-2.5 rounded-xl border border-slate-800 bg-slate-800/40 text-slate-400 hover:bg-slate-800 hover:text-slate-200 text-xs font-semibold transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={handleDeleteTrade}
+                className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 active:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold transition-all shadow-lg shadow-red-950/20 flex items-center gap-1.5"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin" />
+                    Menghapus...
+                  </>
+                ) : (
+                  'Hapus'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toast && (
+        <div
+          className={`fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl border shadow-xl animate-slide-in-right ${
+            toast.type === 'success'
+              ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+              : 'bg-red-500/10 border-red-500/20 text-red-400'
+          }`}
+        >
+          {toast.type === 'success' && <CheckCircle2 size={16} />}
+          <span className="text-xs font-semibold">{toast.message}</span>
         </div>
       )}
     </div>
