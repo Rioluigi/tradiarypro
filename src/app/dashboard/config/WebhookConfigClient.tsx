@@ -386,15 +386,28 @@ export default function WebhookConfigClient({
 
       if (error) throw error;
 
-      setFormSuccess('Account added successfully!');
-      await Promise.race([
-        supabase.auth.refreshSession(),
-        new Promise((resolve) => setTimeout(resolve, 200))
-      ]).catch(() => {});
+
+      // Reset form immediately
       setAccountNumber('');
       setBroker('');
       setLabel('');
-      setAccounts(prev => [data, ...prev]);
+      setFormSuccess('Account added successfully!');
+
+      // Optimistic update: add the new account to the top of the list
+      if (data) {
+        setAccounts(prev => [data, ...prev]);
+      }
+
+      // Safety net: re-fetch all accounts from DB to ensure consistency
+      const { data: freshAccounts, error: fetchError } = await supabase
+        .from('accounts')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (!fetchError && freshAccounts) {
+        setAccounts(freshAccounts);
+      }
 
       setTimeout(() => setFormSuccess(null), 3000);
     } catch (err) {
