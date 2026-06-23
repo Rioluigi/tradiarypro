@@ -164,8 +164,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     
     loadSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      await fetchAccountsAndProfile(session?.user?.id);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT') {
+        await fetchAccountsAndProfile(undefined);
+      } else if (session?.user) {
+        await fetchAccountsAndProfile(session.user.id);
+      }
     });
 
     return () => subscription.unsubscribe();
