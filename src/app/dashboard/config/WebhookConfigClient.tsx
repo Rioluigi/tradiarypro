@@ -352,6 +352,7 @@ export default function WebhookConfigClient({
 
   const handleAddAccount = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
     setFormError(null);
     setFormSuccess(null);
 
@@ -386,7 +387,10 @@ export default function WebhookConfigClient({
       if (error) throw error;
 
       setFormSuccess('Account added successfully!');
-      await supabase.auth.refreshSession();
+      await Promise.race([
+        supabase.auth.refreshSession(),
+        new Promise((resolve) => setTimeout(resolve, 200))
+      ]).catch(() => {});
       setAccountNumber('');
       setBroker('');
       setLabel('');
