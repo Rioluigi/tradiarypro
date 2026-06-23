@@ -157,13 +157,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [supabase]);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        await fetchAccountsAndProfile(session.user.id);
-      } else {
-        await fetchAccountsAndProfile(undefined);
-      }
+    const loadSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      await fetchAccountsAndProfile(session?.user?.id);
+    };
+    
+    loadSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      await fetchAccountsAndProfile(session?.user?.id);
     });
+
     return () => subscription.unsubscribe();
   }, [supabase, fetchAccountsAndProfile]);
 
