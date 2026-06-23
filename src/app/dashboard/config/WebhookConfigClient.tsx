@@ -214,21 +214,21 @@ void OnTradeTransaction(const MqlTradeTransaction& trans,
    
    // Build JSON payload
    string json = "{";
-   json += "\\\\"user_id\\\\":\\\\"" + UserID + "\\\\",";
+   json += "\\\"user_id\\\":\\\"" + UserID + "\\\",";
    if(StringLen(AccountID) > 0)
    {
-      json += "\\\\"account_id\\\\":\\\\"" + AccountID + "\\\\",";
+      json += "\\\"account_id\\\":\\\"" + AccountID + "\\\",";
    }
-   json += "\\\\"ticket\\\\":" + IntegerToString((long)ticket) + ",";
-   json += "\\\\"symbol\\\\":\\\\"" + symbol + "\\\\",";
-   json += "\\\\"type\\\\":\\\\"" + typeStr + "\\\\",";
-   json += "\\\\"volume\\\\":" + SanitizeDouble(volume, 2) + ",";
-   json += "\\\\"open_price\\\\":" + SanitizeDouble(open_price, 5) + ",";
-   json += "\\\\"close_price\\\\":" + SanitizeDouble(price, 5) + ",";
-   json += "\\\\"open_time\\\\":\\\\"" + openTimeISO + "\\\\",";
-   json += "\\\\"close_time\\\\":\\\\"" + closeTimeISO + "\\\\",";
-   json += "\\\\"profit\\\\":" + SanitizeDouble(profit, 2) + ",";
-   json += "\\\\"commission\\\\":" + SanitizeDouble(commission, 2);
+   json += "\\\"ticket\\\":" + IntegerToString((long)ticket) + ",";
+   json += "\\\"symbol\\\":\\\"" + symbol + "\\\",";
+   json += "\\\"type\\\":\\\"" + typeStr + "\\\",";
+   json += "\\\"volume\\\":" + SanitizeDouble(volume, 2) + ",";
+   json += "\\\"open_price\\\":" + SanitizeDouble(open_price, 5) + ",";
+   json += "\\\"close_price\\\":" + SanitizeDouble(price, 5) + ",";
+   json += "\\\"open_time\\\":\\\"" + openTimeISO + "\\\",";
+   json += "\\\"close_time\\\":\\\"" + closeTimeISO + "\\\",";
+   json += "\\\"profit\\\":" + SanitizeDouble(profit, 2) + ",";
+   json += "\\\"commission\\\":" + SanitizeDouble(commission, 2);
    json += "}";
    
    if(EnableLogs)
@@ -334,8 +334,10 @@ export default function WebhookConfigClient({
     }
 
     try {
+      console.log('[handleAddAccount] Starting submission...', { accountNumber, broker, platform, currency, label });
       setSubmitting(true);
-      const { data, error } = await supabase
+      
+      const insertPromise = supabase
         .from('accounts')
         .insert([
           {
@@ -351,9 +353,16 @@ export default function WebhookConfigClient({
         ])
         .select()
         .single();
-
+        
+      console.log('[handleAddAccount] Executing DB insert (8s timeout)...');
+      const insertResult = await Promise.race([
+        insertPromise,
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 8000))
+      ]);
+      
+      console.log('[handleAddAccount] DB response received:', insertResult);
+      const { data, error } = insertResult;
       if (error) throw error;
-
 
       // Reset form immediately
       setAccountNumber('');
@@ -363,18 +372,32 @@ export default function WebhookConfigClient({
 
       // Optimistic update: add the new account to the top of the list
       if (data) {
+        console.log('[handleAddAccount] Performing optimistic state update with:', data);
         setAccounts(prev => [data, ...prev]);
       }
 
-      // Safety net: re-fetch all accounts to ensure consistency and sync globally
-      await refreshAccounts();
+      // Safety net: re-fetch all accounts in background to ensure consistency and sync globally
+      console.log('[handleAddAccount] Triggering global accounts refresh in background...');
+      refreshAccounts(userId).catch(err => {
+        console.error('[handleAddAccount] Background refreshAccounts error:', err);
+      });
 
       setTimeout(() => setFormSuccess(null), 3000);
     } catch (err) {
-      console.error('Error adding account:', err);
-      const errorMsg = err instanceof Error ? err.message : 'Failed to add account';
+      console.error('[handleAddAccount] Error caught in block:', err);
+      let errorMsg = 'Failed to add account';
+      const typedErr = err as { code?: string; message?: string };
+      
+      if (err instanceof Error && err.message === 'TIMEOUT') {
+        errorMsg = 'Request timed out. Please check your connection and try again.';
+      } else if (typedErr?.code === '23505') {
+        errorMsg = 'This account number already exists.';
+      } else if (typedErr?.message) {
+        errorMsg = typedErr.message;
+      }
       setFormError(errorMsg);
     } finally {
+      console.log('[handleAddAccount] Finally block reached. Resetting submitting to false.');
       setSubmitting(false);
     }
   };
@@ -385,17 +408,39 @@ export default function WebhookConfigClient({
     }
 
     try {
-      const { error } = await supabase
+      console.log('[handleDeleteAccount] Deleting account:', id);
+      const deletePromise = supabase
         .from('accounts')
         .delete()
         .eq('id', id);
 
+      console.log('[handleDeleteAccount] Executing DB delete (8s timeout)...');
+      const deleteResult = await Promise.race([
+        deletePromise,
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 8000))
+      ]);
+      
+      console.log('[handleDeleteAccount] DB response received:', deleteResult);
+      const { error } = deleteResult;
       if (error) throw error;
+      
+      console.log('[handleDeleteAccount] Delete successful. Updating local state.');
       setAccounts(prev => prev.filter(acc => acc.id !== id));
-      await refreshAccounts();
+      
+      console.log('[handleDeleteAccount] Triggering global accounts refresh in background...');
+      refreshAccounts(userId).catch(err => {
+        console.error('[handleDeleteAccount] Background refreshAccounts error:', err);
+      });
     } catch (err) {
-      console.error('Error deleting account:', err);
-      const errorMsg = err instanceof Error ? err.message : 'Failed to delete account';
+      console.error('[handleDeleteAccount] Error caught in block:', err);
+      let errorMsg = 'Failed to delete account';
+      const typedErr = err as { message?: string };
+      
+      if (err instanceof Error && err.message === 'TIMEOUT') {
+        errorMsg = 'Delete request timed out. Please try again.';
+      } else if (typedErr?.message) {
+        errorMsg = typedErr.message;
+      }
       alert(errorMsg);
     }
   };

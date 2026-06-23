@@ -27,7 +27,7 @@ interface AppContextType {
   setSelectedCurrency: (currency: 'USD' | 'IDR' | 'EUR') => void;
   accounts: Account[];
   setAccounts: React.Dispatch<React.SetStateAction<Account[]>>;
-  refreshAccounts: () => Promise<void>;
+  refreshAccounts: (explicitUserId?: string) => Promise<void>;
   loadingAccounts: boolean;
   activeCurrency: 'USD' | 'IDR' | 'EUR';
   activeCurrencySymbol: string;
@@ -186,15 +186,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Refresh Accounts
-  const refreshAccounts = useCallback(async () => {
+  const refreshAccounts = useCallback(async (explicitUserId?: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      let userId = explicitUserId;
+      if (!userId) {
+        const { data: { session } } = await supabase.auth.getSession();
+        userId = session?.user?.id;
+      }
+      if (!userId) return;
 
       const { data: accData, error: accError } = await supabase
         .from('accounts')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
       if (accError) throw accError;

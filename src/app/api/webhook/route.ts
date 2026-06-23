@@ -94,10 +94,10 @@ function validatePayload(body: Record<string, unknown>): {
     };
   }
 
-  if (closeTime.getTime() <= openTime.getTime()) {
+  if (closeTime.getTime() < openTime.getTime()) {
     return {
       valid: false,
-      error: 'Invalid data format: close_time must be greater than open_time',
+      error: 'Invalid data format: close_time must be greater than or equal to open_time',
     };
   }
 
