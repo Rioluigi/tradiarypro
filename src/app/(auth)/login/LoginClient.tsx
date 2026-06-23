@@ -44,21 +44,36 @@ export default function LoginClient({ cmsData }: LoginClientProps) {
 
     try {
       const supabase = createClient();
-      const { error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      
+      // Promise.race to enforce an 8-second timeout on the credentials verification request
+      const authResult = await Promise.race([
+        supabase.auth.signInWithPassword({
+          email,
+          password,
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('TIMEOUT')), 8000)
+        )
+      ]);
+
+      const { error: authError } = authResult;
 
       if (authError) {
         setError(authError.message);
+        setIsLoading(false);
         return;
       }
 
+      // Successful login: Redirect immediately (optimistic UI)
       router.push('/dashboard');
       router.refresh();
-    } catch {
-      setError('An unexpected error occurred');
-    } finally {
+    } catch (err: unknown) {
+      console.error('Login error:', err);
+      if (err instanceof Error && err.message === 'TIMEOUT') {
+        setError('Login request timed out. Please check your connection and try again.');
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
       setIsLoading(false);
     }
   };

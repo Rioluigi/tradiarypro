@@ -33,13 +33,20 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const isApiRoute = request.nextUrl.pathname.startsWith('/api');
+
   if (user) {
     // 1. Fetch user's profile metadata (role, active status & onboarding plan selection)
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role, is_active, onboarding_plan_selected')
-      .eq('id', user.id)
-      .single();
+    // Skip database fetch on API routes to avoid latency on API calls
+    let profile = null;
+    if (!isApiRoute) {
+      const { data } = await supabase
+        .from('profiles')
+        .select('role, is_active, onboarding_plan_selected')
+        .eq('id', user.id)
+        .single();
+      profile = data;
+    }
 
     // 2. Block user if inactive (log out & redirect to login with query param)
     if (profile && profile.is_active === false) {
