@@ -337,32 +337,27 @@ export default function WebhookConfigClient({
       console.log('[handleAddAccount] Starting submission...', { accountNumber, broker, platform, currency, label });
       setSubmitting(true);
       
-      const insertPromise = supabase
-        .from('accounts')
-        .insert([
-          {
-            user_id: userId,
-            account_number: accountNumber.trim(),
-            broker: broker.trim(),
-            platform,
-            currency,
-            label: label.trim() || null,
-            balance: 0.00,
-            is_active: true
-          }
-        ])
-        .select()
-        .single();
-        
-      console.log('[handleAddAccount] Executing DB insert (8s timeout)...');
-      const insertResult = await Promise.race([
-        insertPromise,
-        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 8000))
-      ]);
-      
-      console.log('[handleAddAccount] DB response received:', insertResult);
-      const { data, error } = insertResult;
-      if (error) throw error;
+      const res = await fetch('/api/accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: userId,
+          account_number: accountNumber.trim(),
+          broker: broker.trim(),
+          platform,
+          currency,
+          label: label.trim() || null
+        })
+      });
+
+      const result = await res.json();
+      console.log('[handleAddAccount] API response received:', result);
+
+      if (!res.ok) {
+        throw { message: result.error, code: result.code };
+      }
+
+      const { data: newAccount } = result;
 
       // Reset form immediately
       setAccountNumber('');
@@ -371,9 +366,9 @@ export default function WebhookConfigClient({
       setFormSuccess('Account added successfully!');
 
       // Optimistic update: add the new account to the top of the list
-      if (data) {
-        console.log('[handleAddAccount] Performing optimistic state update with:', data);
-        setAccounts(prev => [data, ...prev]);
+      if (newAccount) {
+        console.log('[handleAddAccount] Performing optimistic state update with:', newAccount);
+        setAccounts(prev => [newAccount, ...prev]);
       }
 
       // Safety net: re-fetch all accounts in background to ensure consistency and sync globally
