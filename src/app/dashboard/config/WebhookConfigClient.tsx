@@ -334,6 +334,26 @@ export default function WebhookConfigClient({
 
   const supabase = useMemo(() => createClient(), []);
 
+  useEffect(() => {
+    const fetchAccountsApi = async () => {
+      try {
+        const res = await fetch(`/api/accounts?userId=${userId}`);
+        if (res.ok) {
+          const { data } = await res.json();
+          if (data) {
+            setAccounts(data);
+            setIsAccountsLoading(false);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch accounts via API', err);
+      }
+    };
+    if (userId && accounts.length === 0) {
+      fetchAccountsApi();
+    }
+  }, [userId, setAccounts, accounts.length]);
+
 
   const handleAddAccount = async (e: React.FormEvent) => {
     e.preventDefault();
