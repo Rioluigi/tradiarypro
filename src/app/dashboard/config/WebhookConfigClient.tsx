@@ -334,17 +334,6 @@ export default function WebhookConfigClient({
 
   const supabase = useMemo(() => createClient(), []);
 
-  useEffect(() => {
-    const loadAccounts = async () => {
-      const { data } = await supabase
-        .from('accounts')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-      if (data) setAccounts(data);
-    };
-    if (userId) loadAccounts();
-  }, [userId, supabase, setAccounts]);
 
   const handleAddAccount = async (e: React.FormEvent) => {
     e.preventDefault();
