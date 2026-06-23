@@ -304,6 +304,22 @@ export default function WebhookConfigClient({
     loadingAccounts,
   } = useCurrency();
 
+  const [isAccountsLoading, setIsAccountsLoading] = useState(loadingAccounts);
+
+  useEffect(() => {
+    setIsAccountsLoading(loadingAccounts);
+  }, [loadingAccounts]);
+
+  useEffect(() => {
+    if (isAccountsLoading) {
+      const timer = setTimeout(() => {
+        console.log('[WebhookConfigClient] 3-second timeout reached. Auto-resolving accounts loading to false.');
+        setIsAccountsLoading(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [isAccountsLoading]);
+
   const [copiedAccountId, setCopiedAccountId] = useState<string | null>(null);
 
   // Form states
@@ -884,7 +900,7 @@ export default function WebhookConfigClient({
               <div className="flex flex-col h-full">
                 <h3 className="text-md font-semibold text-slate-200 mb-4">Your Accounts</h3>
 
-                {loadingAccounts ? (
+                 {isAccountsLoading ? (
                   <div className="space-y-3 animate-pulse">
                     {[1, 2].map((n) => (
                       <div key={n} className="h-24 rounded-xl bg-slate-900/40 border border-slate-700/30" />

@@ -18,6 +18,7 @@ export default function LoginClient({ cmsData }: LoginClientProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('Signing in...');
 
   // Fallbacks using cmsDefaults if keys are missing from cmsData
   const quote = cmsData?.login_quote || cmsDefaults.login_quote;
@@ -41,12 +42,11 @@ export default function LoginClient({ cmsData }: LoginClientProps) {
     }
 
     setIsLoading(true);
+    setLoadingMessage('Signing in...');
 
-    try {
+    const attemptLogin = async () => {
       const supabase = createClient();
-      
-      // Promise.race to enforce an 8-second timeout on the credentials verification request
-      const authResult = await Promise.race([
+      return await Promise.race([
         supabase.auth.signInWithPassword({
           email,
           password,
@@ -55,26 +55,45 @@ export default function LoginClient({ cmsData }: LoginClientProps) {
           setTimeout(() => reject(new Error('TIMEOUT')), 8000)
         )
       ]);
+    };
 
-      const { error: authError } = authResult;
+    const maxRetries = 2;
+    let attempt = 0;
 
-      if (authError) {
-        setError(authError.message);
+    while (true) {
+      try {
+        const authResult = await attemptLogin();
+        const { error: authError } = authResult;
+
+        if (authError) {
+          setError(authError.message);
+          setIsLoading(false);
+          return;
+        }
+
+        // Successful login: Redirect immediately (optimistic UI)
+        router.push('/dashboard');
+        router.refresh();
+        return;
+      } catch (err: unknown) {
+        console.error(`Login attempt ${attempt} error:`, err);
+        const isTimeout = err instanceof Error && err.message === 'TIMEOUT';
+        
+        if (isTimeout && attempt < maxRetries) {
+          attempt++;
+          setLoadingMessage('Connecting...');
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          continue;
+        }
+
+        if (isTimeout) {
+          setError('Login request timed out. Please check your connection and try again.');
+        } else {
+          setError('An unexpected error occurred. Please try again.');
+        }
         setIsLoading(false);
         return;
       }
-
-      // Successful login: Redirect immediately (optimistic UI)
-      router.push('/dashboard');
-      router.refresh();
-    } catch (err: unknown) {
-      console.error('Login error:', err);
-      if (err instanceof Error && err.message === 'TIMEOUT') {
-        setError('Login request timed out. Please check your connection and try again.');
-      } else {
-        setError('An unexpected error occurred. Please try again.');
-      }
-      setIsLoading(false);
     }
   };
 
@@ -242,7 +261,7 @@ export default function LoginClient({ cmsData }: LoginClientProps) {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  Signing in...
+                  {loadingMessage}
                 </span>
               ) : (
                 'Sign In'
