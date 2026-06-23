@@ -371,11 +371,7 @@ export default function WebhookConfigClient({
         setAccounts(prev => [newAccount, ...prev]);
       }
 
-      // Safety net: re-fetch all accounts in background to ensure consistency and sync globally
-      console.log('[handleAddAccount] Triggering global accounts refresh in background...');
-      refreshAccounts(userId).catch(err => {
-        console.error('[handleAddAccount] Background refreshAccounts error:', err);
-      });
+
 
       setTimeout(() => setFormSuccess(null), 3000);
     } catch (err) {
