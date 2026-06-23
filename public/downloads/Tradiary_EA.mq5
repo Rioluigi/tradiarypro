@@ -128,7 +128,7 @@ void OnTradeTransaction(const MqlTradeTransaction& trans,
    // Determine the trade type (original position direction)
    // If the closing deal is a BUY, the original position was a SELL (Short).
    // If the closing deal is a SELL, the original position was a BUY (Long).
-   string typeStr = (type == DEAL_TYPE_BUY) ? "SELL" : "BUY";
+   string typeStr = (type == DEAL_TYPE_BUY) ? "BUY" : "SELL";
    
    // Find the corresponding opening deal to get the correct open price and open time
    ulong position_id = HistoryDealGetInteger(ticket, DEAL_POSITION_ID);
