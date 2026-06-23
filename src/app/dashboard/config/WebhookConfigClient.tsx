@@ -332,6 +332,10 @@ export default function WebhookConfigClient({
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
 
+  useEffect(() => {
+    refreshAccounts(userId);
+  }, [userId]);
+
   const supabase = useMemo(() => createClient(), []);
 
   const handleAddAccount = async (e: React.FormEvent) => {
