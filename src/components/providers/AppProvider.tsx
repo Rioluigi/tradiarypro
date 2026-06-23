@@ -26,6 +26,8 @@ interface AppContextType {
   selectedCurrency: 'USD' | 'IDR' | 'EUR';
   setSelectedCurrency: (currency: 'USD' | 'IDR' | 'EUR') => void;
   accounts: Account[];
+  setAccounts: React.Dispatch<React.SetStateAction<Account[]>>;
+  refreshAccounts: () => Promise<void>;
   loadingAccounts: boolean;
   activeCurrency: 'USD' | 'IDR' | 'EUR';
   activeCurrencySymbol: string;
@@ -183,6 +185,38 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('tradiary_selected_currency', currency);
   }, []);
 
+  // Refresh Accounts
+  const refreshAccounts = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: accData, error: accError } = await supabase
+        .from('accounts')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (accError) throw accError;
+      const validAccounts = accData || [];
+      setAccounts(validAccounts);
+
+      // Validate selectedAccountId from localStorage
+      if (typeof window !== 'undefined') {
+        const savedAccountId = localStorage.getItem('tradiary_selected_account_id');
+        if (savedAccountId && savedAccountId !== 'all') {
+          const exists = validAccounts.some((a) => a.id === savedAccountId);
+          if (!exists) {
+            setSelectedAccountIdState('all');
+            localStorage.setItem('tradiary_selected_account_id', 'all');
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Error refreshing accounts in AppProvider:', err);
+    }
+  }, [supabase]);
+
   // Determine active currency
   const activeCurrency = useMemo<'USD' | 'IDR' | 'EUR'>(() => {
     if (selectedAccountId === 'all') {
@@ -274,6 +308,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     selectedCurrency,
     setSelectedCurrency,
     accounts,
+    setAccounts,
+    refreshAccounts,
     loadingAccounts,
     activeCurrency,
     activeCurrencySymbol,
@@ -291,6 +327,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     selectedCurrency,
     setSelectedCurrency,
     accounts,
+    refreshAccounts,
     loadingAccounts,
     activeCurrency,
     activeCurrencySymbol,

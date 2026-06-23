@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 
@@ -78,6 +79,14 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('[Admin CMS API] Successfully published settings changes.');
+
+    try {
+      revalidatePath('/');
+      revalidatePath('/pricing');
+      console.log('[Admin CMS API] Revalidated paths: / and /pricing');
+    } catch (revalErr) {
+      console.warn('[Admin CMS API] Failed to revalidate paths:', revalErr);
+    }
 
     return NextResponse.json({
       success: true,

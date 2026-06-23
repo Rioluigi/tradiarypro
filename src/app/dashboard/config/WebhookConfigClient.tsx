@@ -27,6 +27,7 @@ import {
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
 import { useTheme, ACCENT_COLORS, AccentColor } from '@/components/providers/ThemeProvider';
+import { useCurrency } from '@/components/providers/AppProvider';
 import NotificationBell from '@/components/layout/NotificationBell';
 
 interface WebhookConfigClientProps {
@@ -296,21 +297,13 @@ export default function WebhookConfigClient({
   const [guideOpen, setGuideOpen] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
 
-  interface Account {
-    id: string;
-    user_id: string;
-    account_number: string;
-    broker: string;
-    platform: 'MT4' | 'MT5';
-    balance: number;
-    currency: string;
-    label: string | null;
-    is_active: boolean;
-    created_at: string;
-  }
+  const {
+    accounts,
+    setAccounts,
+    refreshAccounts,
+    loadingAccounts,
+  } = useCurrency();
 
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [loadingAccounts, setLoadingAccounts] = useState(true);
   const [copiedAccountId, setCopiedAccountId] = useState<string | null>(null);
 
   // Form states
@@ -324,31 +317,6 @@ export default function WebhookConfigClient({
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
 
   const supabase = useMemo(() => createClient(), []);
-
-  useEffect(() => {
-    const fetchAccounts = async () => {
-      try {
-        setLoadingAccounts(true);
-        const { data, error } = await supabase
-          .from('accounts')
-          .select('*')
-          .eq('user_id', userId)
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        setAccounts(data || []);
-      } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : String(err);
-        console.error('Error fetching accounts:', errorMsg);
-      } finally {
-        setLoadingAccounts(false);
-      }
-    };
-
-    if (userId) {
-      fetchAccounts();
-    }
-  }, [userId, supabase]);
 
   const handleAddAccount = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -398,16 +366,8 @@ export default function WebhookConfigClient({
         setAccounts(prev => [data, ...prev]);
       }
 
-      // Safety net: re-fetch all accounts from DB to ensure consistency
-      const { data: freshAccounts, error: fetchError } = await supabase
-        .from('accounts')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-
-      if (!fetchError && freshAccounts) {
-        setAccounts(freshAccounts);
-      }
+      // Safety net: re-fetch all accounts to ensure consistency and sync globally
+      await refreshAccounts();
 
       setTimeout(() => setFormSuccess(null), 3000);
     } catch (err) {
@@ -432,6 +392,7 @@ export default function WebhookConfigClient({
 
       if (error) throw error;
       setAccounts(prev => prev.filter(acc => acc.id !== id));
+      await refreshAccounts();
     } catch (err) {
       console.error('Error deleting account:', err);
       const errorMsg = err instanceof Error ? err.message : 'Failed to delete account';
