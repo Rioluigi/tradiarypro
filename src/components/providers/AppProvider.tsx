@@ -89,77 +89,88 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Fetch accounts and user profile when auth state changes (sign in, sign out, token refresh)
-  useEffect(() => {
-    const fetchAccountsAndProfile = async (userId: string | undefined) => {
-      if (!userId) {
-        setAccounts([]);
-        setIsAdmin(false);
-        setLoadingAccounts(false);
-        setLoadingProfile(false);
-        return;
-      }
+  // Fetch accounts and user profile logic
+  const fetchAccountsAndProfile = useCallback(async (userId: string | undefined) => {
+    if (!userId) {
+      setAccounts([]);
+      setIsAdmin(false);
+      setLoadingAccounts(false);
+      setLoadingProfile(false);
+      return;
+    }
 
-      try {
-        setLoadingAccounts(true);
-        setLoadingProfile(true);
+    try {
+      setLoadingAccounts(true);
+      setLoadingProfile(true);
 
-        // Fetch accounts
-        const { data: accData, error: accError } = await supabase
-          .from('accounts')
-          .select('*')
-          .eq('user_id', userId)
-          .order('created_at', { ascending: false });
+      // Fetch accounts
+      const { data: accData, error: accError } = await supabase
+        .from('accounts')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
 
-        if (accError) throw accError;
-        const validAccounts = accData || [];
-        setAccounts(validAccounts);
+      if (accError) throw accError;
+      const validAccounts = accData || [];
+      setAccounts(validAccounts);
 
-        // Validate selectedAccountId from localStorage
-        if (typeof window !== 'undefined') {
-          const savedAccountId = localStorage.getItem('tradiary_selected_account_id');
-          if (savedAccountId && savedAccountId !== 'all') {
-            const exists = validAccounts.some((a) => a.id === savedAccountId);
-            if (exists) {
-              setSelectedAccountIdState(savedAccountId);
-            } else {
-              setSelectedAccountIdState('all');
-              localStorage.setItem('tradiary_selected_account_id', 'all');
-            }
+      // Validate selectedAccountId from localStorage
+      if (typeof window !== 'undefined') {
+        const savedAccountId = localStorage.getItem('tradiary_selected_account_id');
+        if (savedAccountId && savedAccountId !== 'all') {
+          const exists = validAccounts.some((a) => a.id === savedAccountId);
+          if (exists) {
+            setSelectedAccountIdState(savedAccountId);
           } else {
             setSelectedAccountIdState('all');
             localStorage.setItem('tradiary_selected_account_id', 'all');
           }
+        } else {
+          setSelectedAccountIdState('all');
+          localStorage.setItem('tradiary_selected_account_id', 'all');
         }
+      }
 
-        // Fetch profile role (try/catch to avoid crash if profiles table isn't migrated yet)
-        try {
-          const { data: profile, error: profError } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', userId)
-            .single();
-          
-          if (!profError && profile) {
-            setIsAdmin(profile.role === 'admin');
-          } else {
-            setIsAdmin(false);
-          }
-        } catch (e) {
-          console.warn('Profiles table not yet migrated, defaulting to non-admin:', e);
+      // Fetch profile role (try/catch to avoid crash if profiles table isn't migrated yet)
+      try {
+        const { data: profile, error: profError } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', userId)
+          .single();
+        
+        if (!profError && profile) {
+          setIsAdmin(profile.role === 'admin');
+        } else {
           setIsAdmin(false);
         }
-      } catch (err) {
-        console.error('Error fetching accounts/profile in AppProvider:', err);
-      } finally {
-        setLoadingAccounts(false);
-        setLoadingProfile(false);
+      } catch (e) {
+        console.warn('Profiles table not yet migrated, defaulting to non-admin:', e);
+        setIsAdmin(false);
       }
-    };
+    } catch (err) {
+      console.error('Error fetching accounts/profile in AppProvider:', err);
+    } finally {
+      setLoadingAccounts(false);
+      setLoadingProfile(false);
+    }
+  }, [supabase]);
 
-    // Listen to auth state changes
+  // Fetch accounts and profile directly on component mount
+  useEffect(() => {
+    const initSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      await fetchAccountsAndProfile(session?.user?.id);
+    };
+    initSession();
+  }, [supabase, fetchAccountsAndProfile]);
+
+  // Listen to auth state changes (sign in, sign out, token refresh)
+  useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        await fetchAccountsAndProfile(session?.user?.id);
+      } else if (session?.user) {
         await fetchAccountsAndProfile(session.user.id);
       } else {
         await fetchAccountsAndProfile(undefined);
@@ -169,7 +180,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase]);
+  }, [supabase, fetchAccountsAndProfile]);
 
   // Theme synchronization is now handled inside ThemeProvider
 
