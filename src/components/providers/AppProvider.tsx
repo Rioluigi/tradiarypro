@@ -159,7 +159,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // Fetch accounts and profile directly on component mount
   useEffect(() => {
     const initSession = async () => {
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 1500));
       const { data: { session } } = await supabase.auth.getSession();
       await fetchAccountsAndProfile(session?.user?.id);
     };
