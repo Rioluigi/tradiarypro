@@ -156,31 +156,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [supabase]);
 
-  // Fetch accounts and profile directly on component mount
-  useEffect(() => {
-    const initSession = async () => {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      const { data: { session } } = await supabase.auth.getSession();
-      await fetchAccountsAndProfile(session?.user?.id);
-    };
-    initSession();
-  }, [supabase, fetchAccountsAndProfile]);
-
-  // Listen to auth state changes (sign in, sign out, token refresh)
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        await fetchAccountsAndProfile(session?.user?.id);
-      } else if (session?.user) {
+      if (session?.user) {
         await fetchAccountsAndProfile(session.user.id);
       } else {
         await fetchAccountsAndProfile(undefined);
       }
     });
-
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, [supabase, fetchAccountsAndProfile]);
 
   // Theme synchronization is now handled inside ThemeProvider
