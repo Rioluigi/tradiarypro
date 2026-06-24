@@ -5,7 +5,7 @@ import { Trade, TradeInsert } from '@/types/trade';
 import { formatDate, cn } from '@/lib/utils';
 import { useCurrency } from '@/components/providers/AppProvider';
 import { createClient } from '@/lib/supabase/client';
-import { User } from '@supabase/supabase-js';
+import { User, RealtimeChannel } from '@supabase/supabase-js';
 import {
   ArrowUpRight,
   ArrowDownRight,
@@ -318,7 +318,7 @@ export default function TradeHistoryClient({
 
   // Subscribe to real-time updates
   useEffect(() => {
-    let channel: any;
+    let channel: RealtimeChannel;
 
     const initRealtime = async () => {
       const supabase = createClient();
