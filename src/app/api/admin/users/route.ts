@@ -89,17 +89,21 @@ export async function GET(request: NextRequest) {
     if (profiles.length > 0) {
       const userIds = profiles.map((p) => p.id);
       
-      // Fetch trade user_ids filtered to only current page's users
-      const { data: trades, error: tradesErr } = await supabaseAdmin
-        .from('trades')
-        .select('user_id')
-        .in('user_id', userIds);
-
-      if (!tradesErr && trades) {
-        trades.forEach((t) => {
-          tradeCounts[t.user_id] = (tradeCounts[t.user_id] || 0) + 1;
-        });
-      }
+      // Fetch trade counts in parallel for each user on the page
+      await Promise.all(
+        userIds.map(async (userId) => {
+          const { count, error: countErr } = await supabaseAdmin
+            .from('trades')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', userId);
+            
+          if (!countErr) {
+            tradeCounts[userId] = count || 0;
+          } else {
+            tradeCounts[userId] = 0;
+          }
+        })
+      );
     }
 
     return NextResponse.json({
