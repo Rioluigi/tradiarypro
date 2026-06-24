@@ -158,8 +158,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const loadSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      await fetchAccountsAndProfile(session?.user?.id);
+      let sessionData = null;
+      // Retry getting session to handle Vercel SSR cookie hydration delay
+      for (let i = 0; i < 10; i++) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          sessionData = session;
+          break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+      await fetchAccountsAndProfile(sessionData?.user?.id);
     };
     
     loadSession();
