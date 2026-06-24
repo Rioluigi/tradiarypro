@@ -143,24 +143,9 @@ export default function DashboardClient({
           schema: 'public',
           table: 'trades',
         },
-        (payload) => {
-          setLocalTrades((prevTrades) => {
-            if (payload.eventType === 'INSERT') {
-              const newTrade = payload.new as Trade;
-              if (prevTrades.some((t) => t.id === newTrade.id)) {
-                return prevTrades;
-              }
-              const updated = [newTrade, ...prevTrades];
-              return updated.sort((a, b) => new Date(b.close_time).getTime() - new Date(a.close_time).getTime());
-            } else if (payload.eventType === 'UPDATE') {
-              const updatedTrade = payload.new as Trade;
-              return prevTrades.map((t) => (t.id === updatedTrade.id ? updatedTrade : t));
-            } else if (payload.eventType === 'DELETE') {
-              const oldTrade = payload.old as { id: string };
-              return prevTrades.filter((t) => t.id !== oldTrade.id);
-            }
-            return prevTrades;
-          });
+        () => {
+          // Trigger a background re-fetch of server components
+          router.refresh();
         }
       )
       .subscribe();
@@ -168,7 +153,7 @@ export default function DashboardClient({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [router]);
 
   const filteredAllTrades = useMemo(() => filterTrades(localTrades), [localTrades, filterTrades]);
 
